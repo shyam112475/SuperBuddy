@@ -1,0 +1,493 @@
+// CompanionHub — Prisma Schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Phase 2: Authentication & Authorization ───────────────────────────────
+
+enum UserRole {
+  USER
+  PARTNER
+  ADMIN
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  NON_BINARY
+  PREFER_NOT_TO_SAY
+}
+
+enum VerificationStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+model User {
+  id                  String              @id @default(uuid())
+  fullName            String
+  email               String              @unique
+  phoneNumber         String?             @unique
+  passwordHash        String
+  role                UserRole            @default(USER)
+  gender              Gender?
+  dateOfBirth         DateTime?
+  profileImage        String?
+  verificationStatus  VerificationStatus  @default(UNVERIFIED)
+  isActive            Boolean             @default(true)
+  // Optional — used only by the SOS emergency-notification flow (Phase 8).
+  // Never surfaced on any public/partner-facing profile view.
+  emergencyContactName  String?
+  emergencyContactPhone String?
+  // Soft delete: DELETE /api/users/me deactivates + anonymizes rather than
+  // hard-deleting, since bookings/reviews/payments (later phases) reference
+  // the user and shouldn't disappear or orphan financial/audit records.
+  deletedAt           DateTime?
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  refreshTokens       RefreshToken[]
+  passwordResetTokens PasswordResetToken[]
+  partnerProfile      PartnerProfile?
+  bookingsAsCustomer  Booking[]
+  payments            Payment[]
+  messages            Message[]
+  notifications       Notification[]
+  sosAlertsTriggered  SOSAlert[]           @relation("SOSAlertsTriggered")
+  sosAlertsResolved   SOSAlert[]           @relation("SOSAlertsResolved")
+  reportsFiled        Report[]             @relation("ReportsFiled")
+  reportsReceived     Report[]             @relation("ReportsReceived")
+  reportsResolved     Report[]             @relation("ReportsResolved")
+  blocksInitiated     Block[]              @relation("BlocksInitiated")
+  blocksReceived      Block[]              @relation("BlocksReceived")
+  reviewsWritten      Review[]             @relation("ReviewsWritten")
+
+  @@index([email])
+}
+
+// Refresh tokens are stored hashed, never in plaintext, so a DB read alone
+// can't be used to impersonate a session. Storing them (rather than relying
+// purely on JWT expiry) is what makes logout / revocation / "log out other
+// devices" possible later.
+model RefreshToken {
+  id        String    @id @default(uuid())
+  tokenHash String    @unique
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  revokedAt DateTime?
+  // Id of the token this one was rotated into. Plain string (not a FK) —
+  // avoids self-referential cascade issues while still giving us an audit
+  // trail of the rotation chain for reuse-detection investigation.
+  replacedById String?
+  createdByIp  String?
+  createdAt    DateTime @default(now())
+
+  @@index([userId])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  tokenHash String    @unique
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+// ─── Phase 4: Partner Profiles & Discovery ─────────────────────────────────
+
+// Admin-managed allowlist of what a partner can offer. Partners select from
+// this list rather than free-typing a category — this is the main structural
+// guardrail keeping the platform scoped to legitimate, non-sexual activities
+// (see the Master Development Prompt §4/§6). Seeded via prisma/seed.ts;
+// full admin CRUD for this table arrives in Phase 10.
+model ServiceCategory {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  offerings   PartnerServiceOffering[]
+}
+
+enum DayOfWeek {
+  SUNDAY
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+}
+
+// A partner profile is 1:1 with a User. Creating one is what makes a USER
+// into a PARTNER (see partner.service.ts) — someone can browse/book as a
+// user and separately offer services as a partner under the same account.
+// Verification lives on User.verificationStatus (Phase 2/10), not duplicated
+// here, so there's one source of truth for "is this person verified".
+model PartnerProfile {
+  id                  String    @id @default(uuid())
+  userId              String    @unique
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  headline            String
+  bio                 String
+  // Plain text location fields for now — enough for filtering/display
+  // without committing to geospatial infrastructure prematurely (see
+  // Master Development Prompt §18). Swappable for lat/lng + PostGIS later
+  // without touching anything but this model and the discovery query.
+  city                String
+  area                String?
+  isAcceptingBookings Boolean   @default(true)
+  // Cached aggregate, updated transactionally alongside every new review
+  // (see review.service.ts) — computing AVG()/COUNT() over all reviews on
+  // every discovery-list fetch would be wasteful when partner cards need
+  // this on nearly every request; this trades a tiny bit of write-time
+  // work for cheap reads everywhere else, which is the right tradeoff here.
+  averageRating       Float?    
+  reviewCount         Int       @default(0)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  offerings           PartnerServiceOffering[]
+  availability        PartnerAvailability[]
+  bookings            Booking[]
+  reviews             Review[]
+
+  @@index([city])
+}
+
+model PartnerServiceOffering {
+  id                String          @id @default(uuid())
+  partnerProfileId  String
+  partnerProfile    PartnerProfile  @relation(fields: [partnerProfileId], references: [id], onDelete: Cascade)
+  serviceCategoryId String
+  serviceCategory   ServiceCategory @relation(fields: [serviceCategoryId], references: [id])
+  // Short free-text note on how the partner runs this activity. Length-capped
+  // in the validator; flows into the same moderation-flag path as other
+  // partner-authored text once Phase 8/10 build that out.
+  description       String?
+  pricePerHour      Decimal?        @db.Decimal(10, 2)
+  isActive          Boolean         @default(true)
+  createdAt         DateTime        @default(now())
+
+  bookings          Booking[]
+
+  @@unique([partnerProfileId, serviceCategoryId])
+  @@index([serviceCategoryId])
+}
+
+model PartnerAvailability {
+  id               String         @id @default(uuid())
+  partnerProfileId String
+  partnerProfile   PartnerProfile @relation(fields: [partnerProfileId], references: [id], onDelete: Cascade)
+  dayOfWeek        DayOfWeek
+  // 24h "HH:mm" strings — plain recurring weekly windows, no timezone or
+  // exception-date handling yet. Good enough for MVP discovery filtering;
+  // booking-time conflict checking (Phase 5) can layer on top of this.
+  startTime        String
+  endTime          String
+  createdAt        DateTime       @default(now())
+
+  @@index([partnerProfileId])
+}
+
+// ─── Phase 5: Booking System ────────────────────────────────────────────────
+
+enum BookingStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+  COMPLETED
+}
+
+// Who performed a cancel/reject action — used for the audit trail, not for
+// authorization (authorization is resolved fresh from the session on every
+// request; this is only ever a stored record of what happened).
+enum BookingActorRole {
+  CUSTOMER
+  PARTNER
+}
+
+model Booking {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  partnerProfileId String
+  partnerProfile   PartnerProfile @relation(fields: [partnerProfileId], references: [id])
+
+  // The specific offering booked, kept as a nullable reference (SetNull) so
+  // deleting an offering later never deletes/corrupts booking history.
+  // serviceCategoryName is a snapshot for the same reason — the category
+  // name a booking shows should never silently change after the fact.
+  offeringId          String?
+  offering            PartnerServiceOffering? @relation(fields: [offeringId], references: [id], onDelete: SetNull)
+  serviceCategoryName String
+
+  activityDescription String
+  scheduledStart      DateTime
+  scheduledEnd        DateTime
+
+  status BookingStatus @default(PENDING)
+
+  // Snapshotted from the offering at booking time — Phase 6 payments read
+  // this rather than the (possibly since-changed) live offering price.
+  pricePerHourQuoted Decimal? @db.Decimal(10, 2)
+
+  cancelledByRole    BookingActorRole?
+  cancellationReason String?
+  rejectionReason    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  payments  Payment[]
+  messages  Message[]
+  sosAlerts SOSAlert[]
+  reports   Report[]
+  review    Review?
+
+  @@index([userId])
+  @@index([partnerProfileId])
+  @@index([status])
+}
+
+// ─── Phase 6: Payment System ────────────────────────────────────────────────
+
+enum PaymentStatus {
+  CREATED  // Razorpay order created, checkout not yet completed
+  PAID     // signature-verified successful payment
+  FAILED   // checkout attempted but signature verification failed
+  REFUNDED
+}
+
+model Payment {
+  id        String   @id @default(uuid())
+  bookingId String
+  booking   Booking  @relation(fields: [bookingId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  amount   Decimal @db.Decimal(10, 2)
+  currency String  @default("INR")
+  status   PaymentStatus @default(CREATED)
+
+  // Razorpay identifiers. orderId is unique and is the idempotency anchor —
+  // see payment.service.ts for how it prevents double-charging a booking.
+  razorpayOrderId   String  @unique
+  razorpayPaymentId String? @unique
+  razorpaySignature String?
+  failureReason     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([bookingId])
+  @@index([userId])
+}
+
+// ─── Phase 7: Real-Time Chat & Notifications ───────────────────────────────
+
+// Messages are scoped directly to a Booking rather than a separate
+// Conversation entity — a booking already uniquely identifies the two
+// participants (its customer and its partner), so a standalone conversation
+// row would just duplicate that. This matches the spec's chat routes, which
+// are booking-scoped (/api/chat/:bookingId/messages).
+model Message {
+  id        String   @id @default(uuid())
+  bookingId String
+  booking   Booking  @relation(fields: [bookingId], references: [id])
+  senderId  String
+  sender    User     @relation(fields: [senderId], references: [id])
+  content   String
+
+  // Single readAt timestamp is sufficient because a booking has exactly one
+  // other party — "read by the recipient" is unambiguous without a
+  // per-recipient join table the way a group chat would need.
+  readAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([bookingId])
+  @@index([senderId])
+}
+
+enum NotificationType {
+  BOOKING_REQUESTED
+  BOOKING_ACCEPTED
+  BOOKING_REJECTED
+  BOOKING_CANCELLED
+  BOOKING_COMPLETED
+  PAYMENT_RECEIVED
+  NEW_MESSAGE
+  SOS_ALERT
+  REVIEW_RECEIVED
+  VERIFICATION_UPDATE
+  SYSTEM
+}
+
+// Persisted notification inbox. Kept separate from the ephemeral Socket.IO
+// "notification:new" push — sockets deliver it live if the user is online,
+// this table is what backs the notification bell / history for anyone who
+// wasn't connected at the time (or wants to review past notifications).
+model Notification {
+  id        String            @id @default(uuid())
+  userId    String
+  user      User              @relation(fields: [userId], references: [id])
+  type      NotificationType
+  title     String
+  body      String
+  // Small structured payload (e.g. { bookingId }) the frontend uses to
+  // deep-link a notification to the thing it's about, without needing a
+  // rigid column per notification type.
+  data      Json?
+  readAt    DateTime?
+  createdAt DateTime          @default(now())
+
+  @@index([userId])
+  @@index([userId, readAt])
+}
+
+// ─── Phase 8: SOS & Safety ──────────────────────────────────────────────────
+
+enum SOSStatus {
+  ACTIVE
+  RESOLVED
+  FALSE_ALARM
+}
+
+// Location is deliberately plain lat/lng scalars, not a shared "Location"
+// value object — SOS is the one place in the app precise location is
+// captured at all, and keeping it self-contained here (rather than a
+// reusable type other features import) makes it easy to audit every place
+// this sensitive data can flow. Access is gated in sos.service.ts to the
+// triggering user, the other participant on the related booking (if any),
+// and admins only — never exposed via any general user/partner endpoint.
+model SOSAlert {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation("SOSAlertsTriggered", fields: [userId], references: [id])
+  bookingId   String?
+  booking     Booking?  @relation(fields: [bookingId], references: [id])
+  latitude    Float
+  longitude   Float
+  description String?
+  status      SOSStatus @default(ACTIVE)
+
+  resolvedAt       DateTime?
+  resolvedByUserId String?
+  resolvedByUser   User?     @relation("SOSAlertsResolved", fields: [resolvedByUserId], references: [id])
+  resolutionNote   String?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([bookingId])
+  @@index([status])
+}
+
+enum ReportReason {
+  HARASSMENT
+  INAPPROPRIATE_CONTENT
+  SAFETY_CONCERN
+  FRAUD
+  SPAM
+  SEXUAL_SOLICITATION
+  OTHER
+}
+
+enum ReportStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED
+  DISMISSED
+}
+
+// Every report is admin-reviewed (Phase 10) rather than auto-actioned —
+// this table is the audit trail and intake queue, not an enforcement
+// mechanism by itself.
+model Report {
+  id             String       @id @default(uuid())
+  reporterId     String
+  reporter       User         @relation("ReportsFiled", fields: [reporterId], references: [id])
+  reportedUserId String
+  reportedUser   User         @relation("ReportsReceived", fields: [reportedUserId], references: [id])
+  bookingId      String?
+  booking        Booking?     @relation(fields: [bookingId], references: [id])
+  reason         ReportReason
+  description    String
+  status         ReportStatus @default(OPEN)
+
+  // Admin review trail (Phase 10) — null until an admin actually acts on it.
+  resolvedByAdminId String?
+  resolvedByAdmin   User?     @relation("ReportsResolved", fields: [resolvedByAdminId], references: [id])
+  resolutionNote    String?
+  resolvedAt        DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([reporterId])
+  @@index([reportedUserId])
+  @@index([status])
+}
+
+// Blocking is enforced, not just recorded — see chat.service.ts and
+// booking.service.ts, both of which check this table before allowing a
+// new message or booking between two users.
+model Block {
+  id            String   @id @default(uuid())
+  blockerId     String
+  blocker       User     @relation("BlocksInitiated", fields: [blockerId], references: [id])
+  blockedUserId String
+  blockedUser   User     @relation("BlocksReceived", fields: [blockedUserId], references: [id])
+  createdAt     DateTime @default(now())
+
+  @@unique([blockerId, blockedUserId])
+  @@index([blockerId])
+  @@index([blockedUserId])
+}
+
+// ─── Phase 9: Reviews & Ratings ─────────────────────────────────────────────
+
+// One review per booking (bookingId is unique — the DB itself enforces the
+// "one review per booking" rule, not just application logic), written by
+// the customer about the partner after a COMPLETED booking. partnerProfileId
+// is denormalized from booking.partnerProfileId so partner-rating queries
+// don't need to join through Booking just to filter by partner.
+model Review {
+  id     String  @id @default(uuid())
+
+  bookingId String  @unique
+  booking   Booking @relation(fields: [bookingId], references: [id])
+
+  reviewerId String
+  reviewer   User   @relation("ReviewsWritten", fields: [reviewerId], references: [id])
+
+  partnerProfileId String
+  partnerProfile   PartnerProfile @relation(fields: [partnerProfileId], references: [id])
+
+  rating  Int     // 1–5, enforced in reviews.validators.ts (Prisma has no native CHECK constraint)
+  comment String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([partnerProfileId])
+  @@index([reviewerId])
+}

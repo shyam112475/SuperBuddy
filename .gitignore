@@ -1,0 +1,15 @@
+node_modules/
+dist/
+build/
+.env
+.env.local
+*.log
+.DS_Store
+tsconfig.tsbuildinfo
+
+# Local dev-only file storage fallback (see localDevProvider.ts) — never
+# used when Cloudinary is configured, and never belongs in version control.
+backend/uploads/
+
+# Prisma
+backend/prisma/migrations/dev.db
