@@ -1,6 +1,9 @@
 {
   "name": "companionhub-backend",
   "version": "1.0.0",
+    "engines": {
+    "node": "20.x"
+  },
   "description": "CompanionHub REST API",
   "main": "dist/server.js",
   "scripts": {
