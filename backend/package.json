@@ -1,10 +1,10 @@
 {
-  "name": "companionhub-backend",
+  "name": "SuperBuddy-backend",
   "version": "1.0.0",
   "engines": {
     "node": "20.x"
   },
-  "description": "CompanionHub REST API",
+  "description": "SuperBuddy REST API",
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",

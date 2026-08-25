@@ -15,7 +15,7 @@ import type { CreateOrderParams, CreatedOrder, PaymentProvider, VerifySignatureP
  * RAZORPAY_KEY_ID/RAZORPAY_KEY_SECRET to use the real provider instead —
  * see razorpayProvider.ts.
  */
-const DEV_SECRET = 'companionhub-dev-only-payment-secret-do-not-use-in-prod';
+const DEV_SECRET = 'SuperBuddy-dev-only-payment-secret-do-not-use-in-prod';
 
 export const mockPaymentProvider: PaymentProvider = {
   async createOrder({ amountInPaise, currency }: CreateOrderParams): Promise<CreatedOrder> {

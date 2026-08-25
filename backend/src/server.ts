@@ -5,7 +5,7 @@ import { initializeSocketServer } from './sockets';
 
 const app = createApp();
 const server = app.listen(env.PORT, () => {
-  logger.info(`🚀 CompanionHub API listening on port ${env.PORT} [${env.NODE_ENV}]`);
+  logger.info(`🚀 SuperBuddy API listening on port ${env.PORT} [${env.NODE_ENV}]`);
 });
 
 initializeSocketServer(server);

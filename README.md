@@ -1,4 +1,4 @@
-# CompanionHub
+# SuperBuddy
 
 A platform for discovering and booking verified companions for **non-sexual**
 activities and social occasions (hiking, travel, event plus-ones, elderly

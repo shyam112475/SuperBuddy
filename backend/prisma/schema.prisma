@@ -1,4 +1,4 @@
-// CompanionHub — Prisma Schema
+// SuperBuddy — Prisma Schema
 
 generator client {
   provider = "prisma-client-js"
