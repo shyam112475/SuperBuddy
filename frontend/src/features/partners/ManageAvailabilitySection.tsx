@@ -142,7 +142,7 @@ export function ManageAvailabilitySection({
       {/* Schedule */}
       <div className="p-4 sm:p-6">
         <div className="space-y-2">
-          {DAYS.map(({ value, label, short }) => {
+          {DAYS.map(({ value, label }) => {
             const slot = slots[value];
 
             return (
