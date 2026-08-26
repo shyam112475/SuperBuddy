@@ -7,8 +7,7 @@ import { Avatar } from '../components/Avatar';
 import { Button } from '../components/Button';
 import { cn } from '../utils/cn';
 import settingsIcon from '../assets/—Pngtree—settings glyph black icon_3755352.png';
-import profileIcon from '../assets/—Pngtree—man with binoculars looking to_8694411.png';
-import logoIcon from '../assets/ChatGPT Image Aug 26, 2026, 05_08_14 PM.png'; // Replace with your logo Icon
+import profileIcon from '../assets/—Pngtree—man with binoculars looking to_8694411.png';// Replace with your logo Icon
 import bookingIcon from '../assets/bookings.png';
 import SearchIcon from '../assets/search.jpg';
 import AdminIcon from '../assets/admin.jpg';

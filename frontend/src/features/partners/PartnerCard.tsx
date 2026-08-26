@@ -1,10 +1,10 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { Avatar } from '../../components/Avatar';
+
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
-import { Card, CardImage, CardBody } from '../../components/Card';
+import { Card, CardBody } from '../../components/Card';
 import { StarRating } from '../../components/StarRating';
-import { cn } from '../../utils/cn';
+
 import type { PublicPartner } from './types';
 
 /**

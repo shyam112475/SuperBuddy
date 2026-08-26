@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom';
 
 import { Button } from '../components/Button';
-import { Card, CardImage, CardBody } from '../components/Card';
+import { Card,  CardBody } from '../components/Card';
 import { Badge } from '../components/Badge';
-import { cn } from '../utils/cn';
+
 
 /**
  * Activity data with enhanced descriptions for premium feel
@@ -84,7 +84,6 @@ const steps = [
 ];
 
 export function HomePage() {
-  const { data, isLoading, isError, error } = useHealthCheck();
 
   return (
     <div className="min-h-screen bg-neutral-0">
@@ -484,7 +483,7 @@ export function HomePage() {
       {/* ========================================================================
           API STATUS (Dev visibility - can be removed in production)
           ======================================================================== */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+     
         <Card className="bg-gradient-subtle border-0">
           <CardBody className="text-sm">
             <span className="font-medium text-neutral-700">
@@ -514,7 +513,7 @@ export function HomePage() {
             )}
           </CardBody>
         </Card>
-      </section>
+      
     </div>
   );
 }
