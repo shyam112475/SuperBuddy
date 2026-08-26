@@ -1,4 +1,4 @@
-// SuperBuddy — Prisma Schema
+// CompanionHub — Prisma Schema
 
 generator client {
   provider = "prisma-client-js"
@@ -266,6 +266,10 @@ model Booking {
   @@index([userId])
   @@index([partnerProfileId])
   @@index([status])
+  // Every booking list (customer, partner, and admin views) filters by
+  // status and sorts by createdAt desc — same reasoning as the Message
+  // composite index above.
+  @@index([status, createdAt])
 }
 
 // ─── Phase 6: Payment System ────────────────────────────────────────────────
@@ -300,6 +304,9 @@ model Payment {
 
   @@index([bookingId])
   @@index([userId])
+  // Admin payment monitoring filters by status (GET /api/admin/payments) —
+  // without this, that query falls back to a full scan at any real scale.
+  @@index([status])
 }
 
 // ─── Phase 7: Real-Time Chat & Notifications ───────────────────────────────
@@ -325,6 +332,11 @@ model Message {
 
   @@index([bookingId])
   @@index([senderId])
+  // Chat history is always "WHERE bookingId = X ORDER BY createdAt" (see
+  // message.repository.ts findByBooking) — this composite index lets
+  // Postgres satisfy both the filter and the sort from one index instead of
+  // filtering then sorting separately.
+  @@index([bookingId, createdAt])
 }
 
 enum NotificationType {

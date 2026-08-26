@@ -6,6 +6,7 @@ import { sosRepository } from '../repositories/sos.repository';
 import { reportRepository } from '../repositories/report.repository';
 import { toPublicUser, toPublicBooking, toPublicPayment } from '../utils/serializers';
 import { notifyUser } from './notification.service';
+import { invalidatePartnerDetailCache } from './partner.service';
 import { NotFoundError } from '../utils/AppError';
 import { logger } from '../config/logger';
 import type {
@@ -132,6 +133,11 @@ export const adminService = {
       { adminUserId, partnerProfileId, status: input.status },
       'Partner verification status updated'
     );
+    // Verification status is exactly what gates public visibility in
+    // getPublicProfile — a stale cached "not found" or stale cached profile
+    // after a status flip would be a real correctness bug, not just a
+    // freshness nitpick.
+    await invalidatePartnerDetailCache(partnerProfileId);
 
     await notifyUser({
       userId: profile.userId,

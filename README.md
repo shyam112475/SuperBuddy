@@ -1,4 +1,4 @@
-# SuperBuddy
+# CompanionHub
 
 A platform for discovering and booking verified companions for **non-sexual**
 activities and social occasions (hiking, travel, event plus-ones, elderly
@@ -54,7 +54,7 @@ frontend/src/{components,layouts,pages,features,hooks,services,store,types,utils
 
 ## Roadmap
 
-Built in phases — see the master plan. Currently: **Phase 10 (Admin Dashboard & Management) complete.**
+Built in phases — see the master plan. **All 11 phases complete.**
 
 ```
 PHASE 1  ✅ Foundation & Project Setup
@@ -67,8 +67,35 @@ PHASE 7  ✅ Real-Time Chat & Notifications
 PHASE 8  ✅ SOS & Safety
 PHASE 9  ✅ Reviews & Ratings
 PHASE 10 ✅ Admin Dashboard & Management
-PHASE 11 ⬜ Production Hardening & Optimization
+PHASE 11 ✅ Production Hardening & Optimization
 ```
+
+## API documentation
+
+See [`backend/docs/API.md`](backend/docs/API.md) for the complete endpoint
+reference, response envelope, auth model, and error-code guide.
+
+## Testing
+
+```bash
+cd backend
+npm test              # unit tests — pure logic, no database required
+npm run test:integration  # full HTTP + DB flow — requires a live Postgres, see the file header
+```
+
+Unit tests cover the booking state machine (every allowed/disallowed
+transition), the payment HMAC signature scheme (including tamper attempts),
+and booking request validation. Integration tests exercise auth, authorization,
+and the booking/payment flow end-to-end — see `tests/integration/api.test.ts`
+for setup instructions.
+
+## Caching
+
+Redis-backed caching (partner detail views, the service-category allowlist)
+falls back to an in-memory dev provider automatically when `REDIS_URL` is
+unset — same pattern as the storage/payment/push provider abstractions.
+Not suitable for a multi-instance production deployment without setting
+`REDIS_URL`.
 
 ## Creating your first admin account
 

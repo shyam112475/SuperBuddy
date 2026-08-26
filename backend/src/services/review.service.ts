@@ -4,6 +4,7 @@ import { toPublicReview } from '../utils/serializers';
 import { BadRequestError, ConflictError, NotFoundError } from '../utils/AppError';
 import { logger } from '../config/logger';
 import { notifyUser } from './notification.service';
+import { invalidatePartnerDetailCache } from './partner.service';
 import type { CreateReviewInput, ListPartnerReviewsQuery } from '../validators/review.validators';
 
 export const reviewService = {
@@ -50,6 +51,7 @@ export const reviewService = {
     });
 
     logger.info({ bookingId: booking.id, rating: input.rating }, 'Review created');
+    await invalidatePartnerDetailCache(booking.partnerProfileId);
 
     await notifyUser({
       userId: booking.partnerProfile.user.id,

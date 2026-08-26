@@ -8,6 +8,7 @@ import { env } from './config/env';
 import { logger } from './config/logger';
 import apiRoutes from './routes';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
+import { globalRateLimiter } from './middleware/rateLimiter';
 
 export function createApp(): Application {
   const app = express();
@@ -36,8 +37,10 @@ export function createApp(): Application {
   // is configured, since those URLs point at Cloudinary's own CDN instead.
   app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
-  // API routes
-  app.use('/api', apiRoutes);
+  // API routes — global rate limiting applies here (skips /api/sos, see
+  // rateLimiter.ts), individual routers add their own tighter limiters
+  // where warranted (e.g. authRateLimiter on login/register).
+  app.use('/api', globalRateLimiter, apiRoutes);
 
   // 404 + centralized error handling — always last
   app.use(notFoundHandler);

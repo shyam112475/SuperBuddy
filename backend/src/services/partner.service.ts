@@ -3,6 +3,7 @@ import { serviceCategoryRepository } from '../repositories/serviceCategory.repos
 import { toPublicPartner } from '../utils/serializers';
 import { BadRequestError, ConflictError, NotFoundError } from '../utils/AppError';
 import { logger } from '../config/logger';
+import { cacheProvider } from './cache';
 import type {
   AddServiceOfferingInput,
   CreatePartnerProfileInput,
@@ -10,6 +11,14 @@ import type {
   SetAvailabilityInput,
   UpdatePartnerProfileInput,
 } from '../validators/partner.validators';
+
+const PARTNER_DETAIL_CACHE_PREFIX = 'partner:detail:';
+const partnerDetailCacheKey = (id: string) => `${PARTNER_DETAIL_CACHE_PREFIX}${id}`;
+
+/** Called by any mutation that changes what getPublicProfile returns for a partner. */
+export async function invalidatePartnerDetailCache(partnerId: string) {
+  await cacheProvider.del(partnerDetailCacheKey(partnerId));
+}
 
 export const partnerService = {
   async createProfile(userId: string, input: CreatePartnerProfileInput) {
@@ -50,6 +59,7 @@ export const partnerService = {
       area: input.area === '' ? null : input.area,
       isAcceptingBookings: input.isAcceptingBookings,
     });
+    await invalidatePartnerDetailCache(profile.id);
 
     return toPublicPartner(updated);
   },
@@ -61,6 +71,19 @@ export const partnerService = {
    * else avoids confirming an unverified partner's id exists at all.
    */
   async getPublicProfile(partnerId: string, requestingUserId?: string) {
+    // Cache only applies to anonymous requests — a logged-in caller might be
+    // the owner viewing their own not-yet-verified profile, which must
+    // never come from a cache keyed only by partnerId (it would risk
+    // showing a stranger's cached view, or vice versa). Anonymous discovery
+    // traffic is the overwhelming majority of reads here anyway.
+    const isAnonymous = !requestingUserId;
+    if (isAnonymous) {
+      const cached = await cacheProvider.get<ReturnType<typeof toPublicPartner>>(
+        partnerDetailCacheKey(partnerId)
+      );
+      if (cached) return cached;
+    }
+
     const profile = await partnerRepository.findById(partnerId);
     if (!profile) {
       throw new NotFoundError('Partner not found');
@@ -74,7 +97,13 @@ export const partnerService = {
       throw new NotFoundError('Partner not found');
     }
 
-    return toPublicPartner(profile);
+    const result = toPublicPartner(profile);
+
+    if (isAnonymous && isPubliclyVisible) {
+      await cacheProvider.set(partnerDetailCacheKey(partnerId), result, 30);
+    }
+
+    return result;
   },
 
   async searchPartners(query: DiscoverPartnersQuery) {
@@ -127,6 +156,7 @@ export const partnerService = {
       description: input.description,
       pricePerHour: input.pricePerHour,
     });
+    await invalidatePartnerDetailCache(profile.id);
 
     const updated = await partnerRepository.findByUserId(userId);
     return toPublicPartner(updated!);
@@ -142,6 +172,7 @@ export const partnerService = {
     if (result.count === 0) {
       throw new NotFoundError('Service offering not found');
     }
+    await invalidatePartnerDetailCache(profile.id);
 
     const updated = await partnerRepository.findByUserId(userId);
     return toPublicPartner(updated!);
@@ -154,12 +185,27 @@ export const partnerService = {
     }
 
     await partnerRepository.replaceAvailability(profile.id, input.slots);
+    await invalidatePartnerDetailCache(profile.id);
 
     const updated = await partnerRepository.findByUserId(userId);
     return toPublicPartner(updated!);
   },
 
+  /**
+   * The service-category allowlist changes only via the seed script or a
+   * future admin CRUD panel — a long TTL is safe, and this is read on
+   * nearly every discovery page load, so caching it removes a DB round
+   * trip from the hottest read path in the app.
+   */
   async listServiceCategories() {
-    return serviceCategoryRepository.findAllActive();
+    const cacheKey = 'service-categories:active';
+    const cached = await cacheProvider.get<Awaited<ReturnType<typeof serviceCategoryRepository.findAllActive>>>(
+      cacheKey
+    );
+    if (cached) return cached;
+
+    const categories = await serviceCategoryRepository.findAllActive();
+    await cacheProvider.set(cacheKey, categories, 300);
+    return categories;
   },
 };

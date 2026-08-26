@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import { logger } from '../../config/logger';
+import { computePaymentSignature, verifyPaymentSignature } from '../../domain/paymentSignature';
 import type { CreateOrderParams, CreatedOrder, PaymentProvider, VerifySignatureParams } from './PaymentProvider';
 
 /**
@@ -15,7 +16,7 @@ import type { CreateOrderParams, CreatedOrder, PaymentProvider, VerifySignatureP
  * RAZORPAY_KEY_ID/RAZORPAY_KEY_SECRET to use the real provider instead —
  * see razorpayProvider.ts.
  */
-const DEV_SECRET = 'SuperBuddy-dev-only-payment-secret-do-not-use-in-prod';
+const DEV_SECRET = 'companionhub-dev-only-payment-secret-do-not-use-in-prod';
 
 export const mockPaymentProvider: PaymentProvider = {
   async createOrder({ amountInPaise, currency }: CreateOrderParams): Promise<CreatedOrder> {
@@ -25,10 +26,7 @@ export const mockPaymentProvider: PaymentProvider = {
     // /api/payments/verify with this orderId, any paymentId, and the
     // signature this logs — see README "Testing payments without Razorpay".
     const samplePaymentId = `pay_dev_${crypto.randomUUID()}`;
-    const sampleSignature = crypto
-      .createHmac('sha256', DEV_SECRET)
-      .update(`${orderId}|${samplePaymentId}`)
-      .digest('hex');
+    const sampleSignature = computePaymentSignature(DEV_SECRET, orderId, samplePaymentId);
     logger.info(
       { orderId, samplePaymentId, sampleSignature },
       'DEV payment provider: use these values to verify this order without a real Razorpay checkout'
@@ -38,15 +36,6 @@ export const mockPaymentProvider: PaymentProvider = {
   },
 
   verifySignature({ orderId, paymentId, signature }: VerifySignatureParams): boolean {
-    const expected = crypto
-      .createHmac('sha256', DEV_SECRET)
-      .update(`${orderId}|${paymentId}`)
-      .digest('hex');
-
-    const expectedBuf = Buffer.from(expected);
-    const actualBuf = Buffer.from(signature);
-    return (
-      expectedBuf.length === actualBuf.length && crypto.timingSafeEqual(expectedBuf, actualBuf)
-    );
+    return verifyPaymentSignature(DEV_SECRET, orderId, paymentId, signature);
   },
 };

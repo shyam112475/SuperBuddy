@@ -6,39 +6,13 @@ import { toPublicBooking } from '../utils/serializers';
 import { BadRequestError, ConflictError, NotFoundError } from '../utils/AppError';
 import { logger } from '../config/logger';
 import { notifyUser } from './notification.service';
+import { canTransitionBooking, resolveBookingActor } from '../domain/bookingStateMachine';
 import type {
   CancelBookingInput,
   CreateBookingInput,
   ListBookingsQuery,
   RejectBookingInput,
 } from '../validators/booking.validators';
-
-type Actor = 'CUSTOMER' | 'PARTNER';
-
-// The complete, explicit state machine (Master Development Prompt §19).
-// Any (fromStatus, toStatus) pair not listed here is simply not allowed,
-// regardless of who's asking — there is no code path that can reach an
-// unlisted transition.
-const ALLOWED_TRANSITIONS: Record<BookingStatus, Partial<Record<BookingStatus, Actor[]>>> = {
-  PENDING: {
-    ACCEPTED: ['PARTNER'],
-    REJECTED: ['PARTNER'],
-    CANCELLED: ['CUSTOMER'],
-  },
-  ACCEPTED: {
-    COMPLETED: ['PARTNER'],
-    CANCELLED: ['CUSTOMER', 'PARTNER'],
-  },
-  REJECTED: {},
-  CANCELLED: {},
-  COMPLETED: {},
-};
-
-function resolveActor(booking: { userId: string; partnerProfile: { user: { id: string } } }, userId: string): Actor | null {
-  if (booking.userId === userId) return 'CUSTOMER';
-  if (booking.partnerProfile.user.id === userId) return 'PARTNER';
-  return null;
-}
 
 const TRANSITION_NOTIFICATION_TYPE: Partial<Record<BookingStatus, NotificationType>> = {
   ACCEPTED: 'BOOKING_ACCEPTED',
@@ -58,15 +32,17 @@ async function transition(
     throw new NotFoundError('Booking not found');
   }
 
-  const actor = resolveActor(booking, userId);
+  const actor = resolveBookingActor(
+    { userId: booking.userId, partnerUserId: booking.partnerProfile.user.id },
+    userId
+  );
   if (!actor) {
     // Not a party to this booking — 404 rather than 403 so an unrelated
     // user can't even confirm the booking id exists.
     throw new NotFoundError('Booking not found');
   }
 
-  const allowedActors = ALLOWED_TRANSITIONS[booking.status]?.[toStatus];
-  if (!allowedActors || !allowedActors.includes(actor)) {
+  if (!canTransitionBooking(booking.status, toStatus, actor)) {
     throw new ConflictError(
       `This booking is ${booking.status.toLowerCase()} and can't be moved to ${toStatus.toLowerCase()}`
     );
@@ -161,7 +137,10 @@ export const bookingService = {
       throw new NotFoundError('Booking not found');
     }
 
-    const actor = resolveActor(booking, userId);
+    const actor = resolveBookingActor(
+      { userId: booking.userId, partnerUserId: booking.partnerProfile.user.id },
+      userId
+    );
     if (!actor) {
       throw new NotFoundError('Booking not found');
     }

@@ -1,6 +1,6 @@
 import Razorpay from 'razorpay';
-import crypto from 'crypto';
 import { env } from '../../config/env';
+import { verifyPaymentSignature } from '../../domain/paymentSignature';
 import type { CreateOrderParams, CreatedOrder, PaymentProvider, VerifySignatureParams } from './PaymentProvider';
 
 const razorpay = new Razorpay({
@@ -23,16 +23,6 @@ export const razorpayPaymentProvider: PaymentProvider = {
   // sends back after checkout. This is the actual proof of payment — the
   // frontend's "success" callback alone is never trusted.
   verifySignature({ orderId, paymentId, signature }: VerifySignatureParams): boolean {
-    const expected = crypto
-      .createHmac('sha256', env.RAZORPAY_KEY_SECRET!)
-      .update(`${orderId}|${paymentId}`)
-      .digest('hex');
-
-    // Constant-time comparison — avoids leaking signature bytes via timing.
-    const expectedBuf = Buffer.from(expected);
-    const actualBuf = Buffer.from(signature);
-    return (
-      expectedBuf.length === actualBuf.length && crypto.timingSafeEqual(expectedBuf, actualBuf)
-    );
+    return verifyPaymentSignature(env.RAZORPAY_KEY_SECRET!, orderId, paymentId, signature);
   },
 };
