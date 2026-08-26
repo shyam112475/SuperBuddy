@@ -1,165 +1,188 @@
 import { Link, useNavigate } from 'react-router-dom';
+import { Avatar } from '../../components/Avatar';
+import { Badge } from '../../components/Badge';
+import { Button } from '../../components/Button';
+import { Card, CardImage, CardBody } from '../../components/Card';
 import { StarRating } from '../../components/StarRating';
+import { cn } from '../../utils/cn';
 import type { PublicPartner } from './types';
 
+/**
+ * ============================================================================
+ * PREMIUM PARTNER CARD - Image-First Marketplace Design
+ * ============================================================================
+ * 
+ * Features:
+ * - Large, prominent profile image (image-first design)
+ * - Quick info overlay on hover
+ * - Verification badge
+ * - Rating display
+ * - Service tags
+ * - Premium hover interactions
+ * - Mobile-optimized
+ */
 export function PartnerCard({ partner }: { partner: PublicPartner }) {
   const navigate = useNavigate();
 
-  const initials = partner.partner.fullName
-    .split(' ')
-    .map((p) => p[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
+  const isVerified = true; // Assuming from the original design
+  const hasReviews = partner.reviewCount > 0;
 
   return (
-    <div className="group overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-lg">
-      {/* Profile Header */}
-      <div className="relative h-24 bg-gradient-to-br from-brand-50 via-white to-brand-100">
-        <div className="absolute right-4 top-4">
-          <span className="inline-flex items-center gap-1 rounded-full border border-green-200 bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-green-700 shadow-sm backdrop-blur">
-            <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-            Verified
-          </span>
-        </div>
-      </div>
+    <Link
+      to={`/partners/${partner.id}`}
+      className="group"
+    >
+      <Card
+        interactive
+        className="overflow-hidden h-full flex flex-col"
+      >
+        {/* ===== LARGE PROFILE IMAGE (Image-First) ===== */}
+        <div className="relative overflow-hidden h-60 sm:h-72 bg-neutral-100">
+          {partner.partner.profileImage ? (
+            <img
+              src={partner.partner.profileImage}
+              alt={partner.partner.fullName}
+              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
+            />
+          ) : (
+            <div className="h-full w-full bg-gradient-brand flex items-center justify-center text-6xl text-white opacity-20">
+              👤
+            </div>
+          )}
 
-      <div className="px-5 pb-5">
-        {/* Avatar */}
-        <Link
-          to={`/partners/${partner.id}`}
-          className="-mt-10 relative block w-fit"
-        >
-          <div className="h-20 w-20 overflow-hidden rounded-full border-4 border-white bg-brand-100 shadow-md">
-            {partner.partner.profileImage ? (
-              <img
-                src={partner.partner.profileImage}
-                alt={partner.partner.fullName}
-                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center bg-brand-100 text-xl font-bold text-brand-700">
-                {initials}
-              </div>
-            )}
-          </div>
-        </Link>
+          {/* Overlay gradient on hover */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-        {/* Name + Location */}
-        <Link
-          to={`/partners/${partner.id}`}
-          className="mt-3 block"
-        >
-          <h3 className="truncate text-base font-semibold text-neutral-900 transition group-hover:text-brand-700">
-            {partner.partner.fullName}
-          </h3>
+          {/* Verification Badge - Top Right */}
+          {isVerified && (
+            <div className="absolute top-4 right-4">
+              <Badge variant="success" size="sm" icon="✓">
+                Verified
+              </Badge>
+            </div>
+          )}
 
-          <p className="mt-0.5 line-clamp-1 text-sm text-neutral-600">
-            {partner.headline}
-          </p>
-
-          <div className="mt-1 flex items-center gap-1.5 text-xs text-neutral-500">
-            <svg
-              className="h-3.5 w-3.5"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 21s7-5.25 7-11a7 7 0 10-14 0c0 5.75 7 11 7 11z"
-              />
-              <circle cx="12" cy="10" r="2.2" />
-            </svg>
-
-            <span>
-              {partner.city}
-              {partner.area ? `, ${partner.area}` : ''}
+          {/* Online Status Indicator - Top Left */}
+          <div className="absolute top-4 left-4 flex items-center gap-2">
+            <div className="h-3 w-3 rounded-full bg-emerald-500 ring-2 ring-white" />
+            <span className="text-xs font-semibold text-white drop-shadow">
+              Available
             </span>
           </div>
-        </Link>
+        </div>
 
-        {/* Rating */}
-        {partner.reviewCount > 0 ? (
-          <div className="mt-4 flex items-center gap-2">
-            <div className="flex items-center gap-1 rounded-lg bg-amber-50 px-2 py-1">
-              <svg
-                className="h-3.5 w-3.5 fill-amber-400 text-amber-400"
-                viewBox="0 0 20 20"
-              >
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.802 2.036a1 1 0 00-.364 1.118l1.07 3.292c.3.922-.755 1.688-1.538 1.118l-2.802-2.036c-.783.57-1.838-.196-1.539-1.118l1.071-3.292a1 1 0 00-.364-1.118L2.973 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.076-3.292z" />
-              </svg>
+        {/* ===== CARD BODY - Premium Content ===== */}
+        <CardBody className="flex-1 flex flex-col space-y-4">
+          {/* Name & Location */}
+          <div className="space-y-2">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <h3 className="text-lg font-bold text-neutral-900 truncate group-hover:text-brand-600 transition-colors">
+                  {partner.partner.fullName}
+                </h3>
 
-              <span className="text-xs font-semibold text-amber-700">
-                {partner.averageRating?.toFixed(1)}
+                <p className="text-sm text-neutral-600 line-clamp-1">
+                  {partner.headline}
+                </p>
+              </div>
+            </div>
+
+            {/* Location */}
+            <div className="flex items-center gap-1.5 text-sm text-neutral-500">
+              <span>📍</span>
+              <span className="truncate">
+                {partner.city}
+                {partner.area ? `, ${partner.area}` : ''}
               </span>
             </div>
-
-            <StarRating
-              value={Math.round(partner.averageRating ?? 0)}
-              size="sm"
-            />
-
-            <span className="text-xs text-neutral-400">
-              {partner.reviewCount} review
-              {partner.reviewCount !== 1 ? 's' : ''}
-            </span>
           </div>
-        ) : (
-          <div className="mt-4 text-xs text-neutral-400">
-            New companion · No reviews yet
-          </div>
-        )}
 
-        {/* Services */}
-        {partner.services.length > 0 && (
-          <div className="mt-4">
-            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-neutral-400">
-              Offers
-            </p>
-
-            <div className="flex flex-wrap gap-1.5">
-              {partner.services.slice(0, 3).map((service) => (
-                <span
-                  key={service.id}
-                  className="rounded-full border border-neutral-200 bg-neutral-50 px-2.5 py-1 text-xs font-medium text-neutral-600"
-                >
-                  {service.category.name}
+          {/* Rating Section */}
+          {hasReviews ? (
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1">
+                <span className="text-lg">⭐</span>
+                <span className="font-bold text-neutral-900">
+                  {partner.averageRating?.toFixed(1)}
                 </span>
-              ))}
+              </div>
 
-              {partner.services.length > 3 && (
-                <span className="rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-medium text-neutral-500">
-                  +{partner.services.length - 3}
-                </span>
-              )}
+              <div className="flex-1 min-w-0">
+                <StarRating
+                  value={Math.round(partner.averageRating ?? 0)}
+                  size="sm"
+                />
+              </div>
+
+              <span className="text-xs font-medium text-neutral-500 whitespace-nowrap">
+                {partner.reviewCount}
+                {partner.reviewCount === 1 ? ' review' : ' reviews'}
+              </span>
             </div>
+          ) : (
+            <div className="flex items-center gap-2 text-sm text-neutral-500">
+              <span>✨</span>
+              <span>New companion · No reviews yet</span>
+            </div>
+          )}
+
+          {/* Services Tags */}
+          {partner.services.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
+                Services
+              </p>
+
+              <div className="flex flex-wrap gap-2">
+                {partner.services.slice(0, 2).map((service) => (
+                  <Badge
+                    key={service.id}
+                    size="sm"
+                    className="text-xs"
+                  >
+                    {service.category.name}
+                  </Badge>
+                ))}
+
+                {partner.services.length > 2 && (
+                  <Badge size="sm" variant="neutral">
+                    +{partner.services.length - 2}
+                  </Badge>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Spacer to push buttons to bottom */}
+          <div className="flex-1" />
+
+          {/* CTA Buttons */}
+          <div className="space-y-2 border-t border-neutral-200 pt-4">
+            <Button
+              variant="primary"
+              fullWidth
+              size="sm"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate(`/partners/${partner.id}?book=true`);
+              }}
+            >
+              Book Now
+            </Button>
+
+            <Button
+              variant="outline"
+              fullWidth
+              size="sm"
+              onClick={(e) => {
+                e.preventDefault();
+              }}
+            >
+              View Profile
+            </Button>
           </div>
-        )}
-
-        {/* CTA */}
-        <div className="mt-5 flex items-center gap-2 border-t border-neutral-100 pt-4">
-          {/* View Profile */}
-          <Link
-            to={`/partners/${partner.id}`}
-            className="flex flex-1 items-center justify-center rounded-xl border border-neutral-200 bg-white px-3 py-2.5 text-xs font-semibold text-neutral-700 transition hover:border-neutral-300 hover:bg-neutral-50"
-          >
-            View profile
-          </Link>
-
-          {/* Book Companion */}
-          <button
-            type="button"
-            onClick={() => navigate(`/partners/${partner.id}?book=true`)}
-            disabled={partner.services.length === 0}
-            className="flex flex-1 items-center justify-center rounded-xl bg-brand-600 px-3 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-brand-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-neutral-300"
-          >
-            Book companion
-          </button>
-        </div>
-      </div>
-    </div>
+        </CardBody>
+      </Card>
+    </Link>
   );
 }

@@ -3,17 +3,37 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { useLogout } from '../features/auth/hooks';
 import { NotificationBell } from '../features/notifications/NotificationBell';
+import { Avatar } from '../components/Avatar';
+import { Button } from '../components/Button';
+import { cn } from '../utils/cn';
+import settingsIcon from '../assets/—Pngtree—settings glyph black icon_3755352.png';
+import profileIcon from '../assets/—Pngtree—man with binoculars looking to_8694411.png';
+import logoIcon from '../assets/ChatGPT Image Aug 26, 2026, 05_08_14 PM.png'; // Replace with your logo Icon
+import bookingIcon from '../assets/bookings.png';
+import SearchIcon from '../assets/search.jpg';
+import AdminIcon from '../assets/admin.jpg';
+import userIcon from '../assets/user.jpg';
+import paymentIcon from '../assets/payment.jpg';
+import logoutIcon from '../assets/logout.jpg';
 
+/**
+ * ============================================================================
+ * PREMIUM NAVIGATION LINK COMPONENT
+ * Desktop: Gradient underline, Mobile: Pill background with icon
+ * ============================================================================
+ */
 function NavLink({
   to,
   children,
   mobile = false,
   onClick,
+  icon,
 }: {
   to: string;
   children: React.ReactNode;
   mobile?: boolean;
   onClick?: () => void;
+  icon?: React.ReactNode;
 }) {
   const location = useLocation();
 
@@ -26,12 +46,14 @@ function NavLink({
       <Link
         to={to}
         onClick={onClick}
-        className={`flex items-center rounded-xl px-4 py-3 text-sm font-medium transition ${
+        className={cn(
+          'flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200',
           active
-            ? 'bg-brand-50 text-brand-700'
-            : 'text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900'
-        }`}
+            ? 'bg-brand-50 text-brand-700 shadow-sm'
+            : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'
+        )}
       >
+        {icon && <span className="text-base">{icon}</span>}
         {children}
       </Link>
     );
@@ -40,56 +62,27 @@ function NavLink({
   return (
     <Link
       to={to}
-      className={`relative py-2 text-sm font-medium transition ${
-        active
-          ? 'text-neutral-900'
-          : 'text-neutral-500 hover:text-neutral-900'
-      }`}
+      className={cn(
+        'relative flex items-center gap-2 py-2 text-sm font-medium transition-colors duration-200',
+        active ? 'text-neutral-900' : 'text-neutral-600 hover:text-neutral-900'
+      )}
     >
+      {icon && <span className="text-base">{icon}</span>}
       {children}
 
       {active && (
-        <span className="absolute inset-x-0 -bottom-[17px] h-0.5 rounded-full bg-brand-600" />
+        <span className="absolute inset-x-0 -bottom-2 h-1 rounded-full bg-gradient-brand transition-all duration-300" />
       )}
     </Link>
   );
 }
 
-function UserAvatar({
-  fullName,
-  profileImage,
-  size = 'md',
-}: {
-  fullName: string;
-  profileImage?: string | null;
-  size?: 'sm' | 'md';
-}) {
-  const initials = fullName
-    .split(' ')
-    .map((part) => part[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
-
-  const sizeClass = size === 'sm' ? 'h-8 w-8' : 'h-10 w-10';
-
-  return (
-    <div
-      className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-100 text-xs font-bold text-brand-700 ${sizeClass}`}
-    >
-      {profileImage ? (
-        <img
-          src={profileImage}
-          alt=""
-          className="h-full w-full object-cover"
-        />
-      ) : (
-        initials
-      )}
-    </div>
-  );
-}
-
+/**
+ * ============================================================================
+ * PREMIUM AUTHENTICATION NAVIGATION
+ * Shows different UI based on auth state (logged in vs logged out)
+ * ============================================================================
+ */
 function AuthNav({
   mobile = false,
   onNavigate,
@@ -101,132 +94,171 @@ function AuthNav({
   const isInitializing = useAuthStore((s) => s.isInitializing);
   const { mutate: logout, isPending } = useLogout();
 
+  // Loading state
   if (isInitializing) {
     return mobile ? (
-      <div className="h-10 animate-pulse rounded-xl bg-neutral-100" />
+      <div className="h-10 animate-pulse rounded-lg bg-neutral-100" />
     ) : (
       <div className="h-8 w-20 animate-pulse rounded-lg bg-neutral-100" />
     );
   }
 
-  /*
-   * Logged out
-   */
+  // UNAUTHENTICATED - Not logged in
   if (!user) {
     if (mobile) {
       return (
-        <div className="border-t border-neutral-100 pt-4">
-          <div className="grid grid-cols-2 gap-3">
-            <Link
-              to="/login"
-              onClick={onNavigate}
-              className="rounded-xl border border-neutral-200 px-4 py-3 text-center text-sm font-medium text-neutral-700 transition hover:bg-neutral-50"
-            >
+        <div className="border-t border-neutral-200 pt-4 mt-2 space-y-2">
+          <Link to="/login" onClick={onNavigate}>
+            <Button variant="outline" fullWidth size="sm">
               Sign in
-            </Link>
+            </Button>
+          </Link>
 
-            <Link
-              to="/register"
-              onClick={onNavigate}
-              className="rounded-xl bg-brand-600 px-4 py-3 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700"
-            >
+          <Link to="/register" onClick={onNavigate}>
+            <Button variant="primary" fullWidth size="sm">
               Get started
-            </Link>
-          </div>
+            </Button>
+          </Link>
         </div>
       );
     }
 
     return (
-      <div className="flex items-center gap-3">
-        <Link
-          to="/login"
-          className="rounded-lg px-3.5 py-2 text-sm font-medium text-neutral-600 transition hover:bg-neutral-50 hover:text-neutral-900"
-        >
-          Sign in
+      <div className="flex items-center gap-2">
+        <Link to="/login">
+          <Button variant="ghost" size="sm">
+            Sign in
+          </Button>
         </Link>
 
-        <Link
-          to="/register"
-          className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700"
-        >
-          Get started
+        <Link to="/register">
+          <Button variant="primary" size="sm">
+            Get started
+          </Button>
         </Link>
       </div>
     );
   }
 
-  /*
-   * Mobile navigation
-   */
+  // AUTHENTICATED - Mobile Menu
   if (mobile) {
     return (
-      <div className="space-y-2">
-        {/* User */}
+      <div className="space-y-1">
+        {/* User Card Header */}
         <Link
           to="/profile"
           onClick={onNavigate}
-          className="mb-3 flex items-center gap-3 rounded-2xl bg-neutral-50 p-3"
+          className={cn(
+            'flex items-center gap-3 rounded-2xl p-3 transition-all duration-200',
+            'bg-neutral-50 hover:bg-neutral-100 mb-4'
+          )}
         >
-          <UserAvatar
-            fullName={user.fullName}
-            profileImage={user.profileImage}
+          <Avatar
+            name={user.fullName}
+            src={user.profileImage || undefined}
+            size="md"
+            verified={user.verificationStatus === 'VERIFIED'}
           />
 
-          <div className="min-w-0">
-            <p className="text-xs text-neutral-400">Welcome back</p>
-            <p className="truncate text-sm font-semibold text-neutral-900">
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-medium text-neutral-500">Welcome back</p>
+            <p className="truncate text-sm font-bold text-neutral-900">
               {user.fullName}
             </p>
           </div>
+
+          <svg
+            className="h-5 w-5 shrink-0 text-neutral-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 5l7 7-7 7"
+            />
+          </svg>
         </Link>
 
-        <NavLink to="/bookings" mobile onClick={onNavigate}>
-          Bookings
+        {/* Main Navigation Items */}
+        <NavLink to="/bookings" mobile onClick={onNavigate} icon="">
+          My Bookings
         </NavLink>
 
-        <NavLink to="/partner/dashboard" mobile onClick={onNavigate}>
+        <NavLink
+          to="/partner/dashboard"
+          mobile
+          onClick={onNavigate}
+          icon={user.role === 'PARTNER' ? <img
+      src={userIcon}
+      alt="Settings"
+      className="w-5 h-5 object-contain"
+    /> :  <img
+      src={AdminIcon}
+      alt="Settings"
+      className="w-5 h-5 object-contain"
+    />}
+        >
           {user.role === 'PARTNER'
-            ? 'My Companion Profile'
+            ? 'Companion Profile'
             : 'Become a Companion'}
         </NavLink>
 
         {user.role === 'ADMIN' && (
-          <Link
-            to="/admin"
-            onClick={onNavigate}
-            className="flex items-center rounded-xl px-4 py-3 text-sm font-semibold text-brand-700 transition hover:bg-brand-50"
-          >
+          <NavLink to="/admin" mobile onClick={onNavigate} 
+           icon={
+    <img
+      src={AdminIcon}
+      alt="Settings"
+      className="w-5 h-5 object-contain"
+    />}>
             Admin Dashboard
-          </Link>
+          </NavLink>
         )}
 
-        <Link
-          to="/profile"
-          onClick={onNavigate}
-          className="flex items-center rounded-xl px-4 py-3 text-sm font-medium text-neutral-600 transition hover:bg-neutral-50 hover:text-neutral-900"
-        >
+        {/* Divider */}
+        <div className="my-2 border-t border-neutral-100" />
+
+        {/* Secondary Navigation */}
+        <NavLink to="/profile" mobile onClick={onNavigate}  icon={
+    <img
+      src={profileIcon}
+      alt="Settings"
+      className="w-5 h-5 object-contain"
+    />
+  }>
           My Profile
-        </Link>
+        </NavLink>
 
-        <Link
-          to="/account/settings"
-          onClick={onNavigate}
-          className="flex items-center rounded-xl px-4 py-3 text-sm font-medium text-neutral-600 transition hover:bg-neutral-50 hover:text-neutral-900"
-        >
-          Account Settings
-        </Link>
+        <NavLink
+  to="/account/settings"
+  mobile
+  onClick={onNavigate}
+  icon={
+    <img
+      src={settingsIcon}
+      alt="Settings"
+      className="w-5 h-5 object-contain"
+    />
+  }
+>
+  Settings
+</NavLink>
 
-        <Link
-          to="/payments"
-          onClick={onNavigate}
-          className="flex items-center rounded-xl px-4 py-3 text-sm font-medium text-neutral-600 transition hover:bg-neutral-50 hover:text-neutral-900"
-        >
+        <NavLink to="/payments" mobile onClick={onNavigate}  icon={
+    <img
+      src={paymentIcon}
+      alt="Settings"
+      className="w-5 h-5 object-contain"
+    />
+  }>
           Payment History
-        </Link>
+        </NavLink>
 
-        {/* Notifications */}
-        <div className="flex items-center justify-between rounded-xl px-4 py-3">
+        {/* Notifications & Logout */}
+        <div className="flex items-center justify-between rounded-lg px-4 py-3 mt-2">
           <span className="text-sm font-medium text-neutral-600">
             Notifications
           </span>
@@ -234,123 +266,227 @@ function AuthNav({
           <NotificationBell />
         </div>
 
-        {/* Logout */}
-        <div className="border-t border-neutral-100 pt-3">
-          <button
-            onClick={() => {
-              logout();
-              onNavigate?.();
-            }}
-            disabled={isPending}
-            className="w-full rounded-xl px-4 py-3 text-left text-sm font-medium text-red-600 transition hover:bg-red-50 disabled:opacity-50"
-          >
-            {isPending ? 'Signing out…' : 'Sign out'}
-          </button>
-        </div>
+        {/* Logout Button */}
+        <button
+          type="button"
+          onClick={() => {
+            logout();
+            onNavigate?.();
+          }}
+          disabled={isPending}
+          className={cn(
+            'w-full mt-2 flex items-center rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200',
+            'text-neutral-600 hover:bg-red-50 hover:text-red-700',
+            isPending && 'opacity-50 cursor-not-allowed'
+          )}
+        >
+          {isPending ? 'Signing out...' : 'Sign out'}
+        </button>
       </div>
     );
   }
 
-  /*
-   * Desktop navigation
-   */
+  // AUTHENTICATED - Desktop Navigation
   return (
-    <div className="flex items-center gap-4 xl:gap-6">
-      <NavLink to="/bookings">Bookings</NavLink>
+    <div className="flex items-center gap-4">
+      {/* Notifications */}
+      <NotificationBell />
 
-      <NavLink to="/partner/dashboard">
-        {user.role === 'PARTNER'
-          ? 'My Companion Profile'
-          : 'Become a Companion'}
-      </NavLink>
-
-      {user.role === 'ADMIN' && (
-        <Link
-          to="/admin"
-          className="rounded-lg bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-700 transition hover:bg-brand-100"
-        >
-          Admin
-        </Link>
-      )}
-
-      <div className="ml-1 flex items-center gap-3 border-l border-neutral-200 pl-4">
-        <NotificationBell />
-
-        <Link
-          to="/profile"
-          className="group flex items-center gap-2.5 rounded-xl px-2 py-1.5 transition hover:bg-neutral-50"
-        >
-          <UserAvatar
-            fullName={user.fullName}
-            profileImage={user.profileImage}
+      {/* User Dropdown Menu */}
+      <div className="relative group">
+        <button className="flex items-center gap-2 rounded-full hover:bg-neutral-100 transition-colors duration-200 p-1">
+          <Avatar
+            name={user.fullName}
+            src={user.profileImage || undefined}
             size="sm"
+            verified={user.verificationStatus === 'VERIFIED'}
           />
+          <svg
+            className="h-4 w-4 text-neutral-600 group-hover:text-neutral-900"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 14l-7 7m0 0l-7-7m7 7V3"
+            />
+          </svg>
+        </button>
 
-          <div className="hidden xl:block">
-            <p className="text-xs font-medium text-neutral-400">
-              Welcome back
-            </p>
-
-            <p className="max-w-28 truncate text-sm font-semibold text-neutral-800">
-              {user.fullName.split(' ')[0]}
+        {/* Dropdown Menu - Hidden by default, shown on hover */}
+        <div className="absolute right-0 mt-0 w-56 rounded-2xl bg-white shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 border border-neutral-200">
+          {/* User Info */}
+          <div className="px-4 py-4 border-b border-neutral-100">
+            <p className="text-xs text-neutral-500">Signed in as</p>
+            <p className="text-sm font-bold text-neutral-900 truncate">
+              {user.fullName}
             </p>
           </div>
-        </Link>
 
-        <button
-          onClick={() => logout()}
-          disabled={isPending}
-          className="whitespace-nowrap text-xs font-medium text-neutral-400 transition hover:text-red-600 disabled:opacity-50"
-        >
-          {isPending ? 'Signing out…' : 'Sign out'}
-        </button>
+          {/* Navigation Links */}
+          <div className="py-2 space-y-1">
+            <Link
+              to="/profile"
+              className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50 rounded-lg transition-colors"
+            >
+              <span>
+                 <img
+      src={userIcon}
+      alt="Settings"
+      className="w-5 h-5 object-contain"
+    />
+                </span> My Profile
+            </Link>
+
+            <Link
+              to="/bookings"
+              className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50 rounded-lg transition-colors"
+            >
+              <span> <img
+      src={bookingIcon}
+      alt="Settings"
+      className="w-5 h-5 object-contain"
+    /></span> My Bookings
+            </Link>
+
+            <Link
+              to="/partner/dashboard"
+              className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50 rounded-lg transition-colors"
+            >
+              <span>{user.role === 'PARTNER' ?  <img
+      src={userIcon}
+      alt="Settings"
+      className="w-5 h-5 object-contain"
+    /> : <img
+      src={profileIcon}
+      alt="Settings"
+      className="w-5 h-5 object-contain"
+    /> }</span>
+              {user.role === 'PARTNER'
+                ? 'Companion Profile'
+                : 'Become a Companion'}
+            </Link>
+
+            <Link
+              to="/payments"
+              className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50 rounded-lg transition-colors"
+            >
+              <span><img
+      src={paymentIcon}
+      alt="Settings"
+      className="w-5 h-5 object-contain"
+    /></span> Payment History
+            </Link>
+
+            {user.role === 'ADMIN' && (
+              <Link
+                to="/admin"
+                className="flex items-center gap-3 px-4 py-2 text-sm text-brand-600 hover:bg-brand-50 rounded-lg transition-colors font-medium"
+              >
+                <span> <img
+      src={AdminIcon}
+      alt="Settings"
+      className="w-5 h-5 object-contain"
+    /></span> Admin Dashboard
+              </Link>
+            )}
+          </div>
+
+          {/* Divider */}
+          <div className="border-t border-neutral-100" />
+
+          {/* Settings & Logout */}
+          <div className="py-2 space-y-1">
+            <Link
+              to="/account/settings"
+              className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50 rounded-lg transition-colors"
+            >
+              <span><img
+      src={settingsIcon}
+      alt="Settings"
+      className="w-5 h-5 object-contain"
+    /></span> Settings
+            </Link>
+
+            <button
+              type="button"
+              onClick={() => logout()}
+              disabled={isPending}
+              className={cn(
+                'w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors',
+                isPending && 'opacity-50 cursor-not-allowed'
+              )}
+            >
+              <span><img
+      src={logoutIcon}
+      alt="Settings"
+      className="w-5 h-5 object-contain"
+    /></span> {isPending ? 'Signing out...' : 'Sign out'}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
+/**
+ * ============================================================================
+ * PREMIUM MAIN LAYOUT COMPONENT
+ * ============================================================================
+ */
 export function MainLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen flex-col bg-neutral-50">
-      {/* ================= HEADER ================= */}
-      <header className="sticky top-0 z-50 border-b border-neutral-200 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:h-[72px] sm:px-6 lg:px-8">
-          {/* Logo */}
+    <div className="flex min-h-screen flex-col bg-neutral-0">
+      {/* ========== PREMIUM HEADER ========== */}
+      <header className="sticky top-0 z-50 border-b border-neutral-200 bg-white/95 backdrop-blur-md shadow-xs">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:h-[72px] sm:px-6 lg:px-8">
+          {/* ========== LOGO ========== */}
           <Link
             to="/"
             onClick={() => setMobileMenuOpen(false)}
-            className="group flex items-center gap-2.5"
+            className="group flex items-center gap-2.5 transition-opacity duration-200 hover:opacity-80"
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-600 text-sm font-bold text-white shadow-sm transition group-hover:bg-brand-700">
-              S
+            {/* Logo Icon */}
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl text-brand-600 text-base font-bold shadow-button transition-all duration-200 group-hover:shadow-button-hover">
+              SB
             </div>
-
-            <div>
-              <span className="text-lg font-bold tracking-tight text-neutral-900">
+            {/* Logo Text */}
+            <div className="hidden sm:block">
+              <span className="text-base lg:text-lg font-bold tracking-tight text-neutral-900">
                 Super
               </span>
-
-              <span className="text-lg font-bold tracking-tight text-brand-600">
+              <span className="text-base lg:text-lg font-bold tracking-tight text-brand-600">
                 Buddy
               </span>
             </div>
           </Link>
 
-          {/* ================= DESKTOP NAV ================= */}
+          {/* ========== DESKTOP NAV ========== */}
           <nav className="hidden h-full items-center gap-8 lg:flex">
-            <NavLink to="/partners">Discover</NavLink>
+            <NavLink to="/partners" >
+            <img 
+      src={SearchIcon} 
+      alt="Discover" 
+      className="h-5 w-5 object-contain" 
+    />
+              Discover
+            </NavLink>
 
             <AuthNav />
           </nav>
 
-          {/* ================= MOBILE HEADER ================= */}
-          <div className="flex items-center gap-2 lg:hidden">
+          {/* ========== MOBILE HEADER ========== */}
+          <div className="flex items-center gap-3 lg:hidden">
             {/* Notification for logged-in users */}
             {useAuthStore.getState().user && <NotificationBell />}
 
-            {/* Hamburger */}
+            {/* Hamburger Menu Button */}
             <button
               type="button"
               aria-label={
@@ -358,7 +494,7 @@ export function MainLayout() {
               }
               aria-expanded={mobileMenuOpen}
               onClick={() => setMobileMenuOpen((open) => !open)}
-              className="flex h-10 w-10 items-center justify-center rounded-xl text-neutral-600 transition hover:bg-neutral-100 hover:text-neutral-900"
+              className="flex h-10 w-10 items-center justify-center rounded-lg text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 transition-colors duration-200"
             >
               {mobileMenuOpen ? (
                 <svg
@@ -391,17 +527,18 @@ export function MainLayout() {
           </div>
         </div>
 
-        {/* ================= MOBILE MENU ================= */}
+        {/* ========== PREMIUM MOBILE MENU ========== */}
         {mobileMenuOpen && (
-          <div className="border-t border-neutral-100 bg-white lg:hidden">
-            <div className="mx-auto max-w-6xl px-4 py-4 sm:px-6">
-              <div className="space-y-1">
+          <div className="border-t border-neutral-200 bg-white lg:hidden animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6">
+              <div className="space-y-2">
                 <NavLink
                   to="/partners"
                   mobile
+                  icon="🔍"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Discover companions
+                  Discover Companions
                 </NavLink>
 
                 <AuthNav
@@ -414,65 +551,60 @@ export function MainLayout() {
         )}
       </header>
 
-      {/* ================= MAIN ================= */}
+      {/* ========== MAIN CONTENT ========== */}
       <main className="min-w-0 flex-1">
         <Outlet />
       </main>
 
-      {/* ================= FOOTER ================= */}
-      <footer className="border-t border-neutral-200 bg-white">
-        <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
-          {/* Footer columns */}
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr] lg:gap-12">
-            {/* Brand */}
-            <div>
-              <Link
-                to="/"
-                className="flex items-center gap-2"
-              >
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-xs font-bold text-white">
-                  S
-                </div>
+      {/* ========== PREMIUM FOOTER ========== */}
+      <footer className="border-t border-neutral-200 bg-neutral-0 py-12 sm:py-16 lg:py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          {/* Footer Grid */}
+          <div className="grid grid-cols-2 gap-8 sm:grid-cols-4 mb-12">
+            {/* About */}
+            <div className="col-span-2 sm:col-span-1">
+              <div className="flex items-center gap-2 mb-4">
+                {/* Logo Icon */}
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl text-brand-600 text-base font-bold shadow-button transition-all duration-200 group-hover:shadow-button-hover">
+              SB
+            </div>
+                <span className="font-bold text-neutral-900">SuperBuddy</span>
+              </div>
 
-                <span className="font-bold text-neutral-900">
-                  Super<span className="text-brand-600">Buddy</span>
-                </span>
-              </Link>
-
-              <p className="mt-4 max-w-xs text-sm leading-6 text-neutral-500">
-                A trusted platform for finding companions for activities,
+              <p className="text-sm text-neutral-600 mb-3">
+                Connect with verified companions for
                 travel, events, and everyday experiences.
               </p>
 
-              <p className="mt-4 text-xs font-medium text-neutral-400">
+              <p className="text-xs font-medium text-neutral-400">
                 Non-sexual companionship platform
               </p>
             </div>
 
             {/* Explore */}
             <div>
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-900 mb-4">
                 Explore
               </h3>
 
-              <div className="mt-4 space-y-3">
+              <div className="space-y-3">
                 <Link
                   to="/partners"
-                  className="block text-sm text-neutral-500 transition hover:text-neutral-900"
+                  className="block text-sm text-neutral-600 hover:text-brand-600 transition-colors duration-200 font-medium"
                 >
                   Find companions
                 </Link>
 
                 <Link
                   to="/partner/dashboard"
-                  className="block text-sm text-neutral-500 transition hover:text-neutral-900"
+                  className="block text-sm text-neutral-600 hover:text-brand-600 transition-colors duration-200 font-medium"
                 >
                   Become a companion
                 </Link>
 
                 <Link
                   to="/bookings"
-                  className="block text-sm text-neutral-500 transition hover:text-neutral-900"
+                  className="block text-sm text-neutral-600 hover:text-brand-600 transition-colors duration-200 font-medium"
                 >
                   My bookings
                 </Link>
@@ -481,49 +613,49 @@ export function MainLayout() {
 
             {/* Safety */}
             <div>
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-900 mb-4">
                 Safety
               </h3>
 
-              <div className="mt-4 space-y-3">
-                <span className="block text-sm text-neutral-500">
-                  Verified profiles
+              <div className="space-y-3">
+                <span className="block text-sm text-neutral-600 font-medium">
+                  ✓ Verified profiles
                 </span>
 
-                <span className="block text-sm text-neutral-500">
-                  Reporting & blocking
+                <span className="block text-sm text-neutral-600 font-medium">
+                  ✓ Reporting & blocking
                 </span>
 
-                <span className="block text-sm text-neutral-500">
-                  SOS support
+                <span className="block text-sm text-neutral-600 font-medium">
+                  ✓ SOS support
                 </span>
               </div>
             </div>
 
             {/* Account */}
             <div>
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-900 mb-4">
                 Account
               </h3>
 
-              <div className="mt-4 space-y-3">
+              <div className="space-y-3">
                 <Link
                   to="/profile"
-                  className="block text-sm text-neutral-500 transition hover:text-neutral-900"
+                  className="block text-sm text-neutral-600 hover:text-brand-600 transition-colors duration-200 font-medium"
                 >
                   Profile
                 </Link>
 
                 <Link
                   to="/account/settings"
-                  className="block text-sm text-neutral-500 transition hover:text-neutral-900"
+                  className="block text-sm text-neutral-600 hover:text-brand-600 transition-colors duration-200 font-medium"
                 >
-                  Account settings
+                  Settings
                 </Link>
 
                 <Link
                   to="/payments"
-                  className="block text-sm text-neutral-500 transition hover:text-neutral-900"
+                  className="block text-sm text-neutral-600 hover:text-brand-600 transition-colors duration-200 font-medium"
                 >
                   Payment history
                 </Link>
@@ -531,18 +663,18 @@ export function MainLayout() {
             </div>
           </div>
 
-          {/* Bottom */}
-          <div className="mt-8 flex flex-col gap-4 border-t border-neutral-100 pt-6 sm:mt-10 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-xs text-neutral-400">
+          {/* Footer Bottom */}
+          <div className="border-t border-neutral-200 pt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs text-neutral-500 font-medium">
               © {new Date().getFullYear()} SuperBuddy. All rights reserved.
             </p>
 
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-neutral-400">
-              <span>Safe community</span>
-              <span>•</span>
-              <span>Real connections</span>
-              <span>•</span>
-              <span>Real experiences</span>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-neutral-500 font-medium">
+              <span>✓ Safe community</span>
+              <span className="text-neutral-300">•</span>
+              <span>✓ Real connections</span>
+              <span className="text-neutral-300">•</span>
+              <span>✓ Real experiences</span>
             </div>
           </div>
         </div>

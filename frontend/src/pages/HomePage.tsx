@@ -1,47 +1,85 @@
 import { Link } from 'react-router-dom';
-import { useHealthCheck } from '../hooks/useHealthCheck';
 
+import { Button } from '../components/Button';
+import { Card, CardImage, CardBody } from '../components/Card';
+import { Badge } from '../components/Badge';
+import { cn } from '../utils/cn';
+
+/**
+ * Activity data with enhanced descriptions for premium feel
+ */
 const activities = [
   {
     icon: '🥾',
     title: 'Outdoor & Hiking',
-    description: 'Find someone to explore trails, parks, and outdoor experiences with.',
+    description: 'Explore trails, parks, and mountain peaks with someone who shares your adventurous spirit.',
+    color: 'emerald',
   },
   {
     icon: '✈️',
     title: 'Travel Companion',
-    description: 'Have a companion for trips, sightseeing, or exploring a new city.',
+    description: 'Navigate new cities and create unforgettable travel memories with a trusted travel partner.',
+    color: 'blue',
   },
   {
     icon: '🎉',
     title: 'Events & Occasions',
-    description: 'Find a plus-one for events, social gatherings, and special occasions.',
+    description: 'Find the perfect plus-one for weddings, parties, concerts, and special celebrations.',
+    color: 'purple',
   },
   {
     icon: '☕',
     title: 'Social & Activities',
-    description: 'Coffee, games, conversations, movies, and everyday activities.',
+    description: 'Coffee dates, movie nights, games, and genuine conversations without the awkwardness.',
+    color: 'amber',
   },
 ];
 
-const features = [
+/**
+ * Trust & safety features with premium language
+ */
+const trustFeatures = [
   {
     icon: '✓',
-    title: 'Verified people',
+    title: 'Verified People',
     description:
-      'Profiles are reviewed and identity verification helps keep the community trustworthy.',
+      'Identity verification, profile reviews, and community ratings create a trustworthy environment.',
   },
   {
-    icon: '🛡',
-    title: 'Safety first',
+    icon: '🛡️',
+    title: 'Safety First',
     description:
-      'Built-in reporting, blocking, SOS alerts, and emergency contact support.',
+      'In-app reporting, blocking, emergency SOS alerts, and real-time safety support.',
   },
   {
     icon: '💬',
-    title: 'Stay in control',
+    title: 'Stay in Control',
     description:
-      'Chat, discuss the activity, and agree on the details before meeting.',
+      'Secure messaging, activity confirmation, and complete transparency before every meet.',
+  },
+];
+
+/**
+ * How it works steps
+ */
+const steps = [
+  {
+    number: '01',
+    title: 'Discover',
+    description: 'Browse verified companions and find people offering activities that match your interests.',
+    icon: '🔍',
+  },
+  {
+    number: '02',
+    title: 'Connect',
+    description: 'Chat securely, discuss details, and agree on the perfect time and activity together.',
+    icon: '💬',
+  },
+  {
+    number: '03',
+    title: 'Enjoy',
+    description: 'Meet your companion and create genuine, memorable experiences together.',
+    icon: '🎉',
   },
 ];
 
@@ -49,395 +87,433 @@ export function HomePage() {
   const { data, isLoading, isError, error } = useHealthCheck();
 
   return (
-    <div className="min-h-screen bg-neutral-50 text-neutral-900">
-
-      {/* Hero */}
+    <div className="min-h-screen bg-neutral-0">
+      {/* ========================================================================
+          PREMIUM HERO SECTION
+          ======================================================================== */}
       <section className="relative overflow-hidden border-b border-neutral-200 bg-white">
-        <div className="absolute -right-32 -top-32 h-96 w-96 rounded-full bg-brand-100/60 blur-3xl" />
-        <div className="absolute -left-32 bottom-0 h-80 w-80 rounded-full bg-orange-100/50 blur-3xl" />
+        {/* Background gradients */}
+        <div className="absolute -right-40 -top-40 h-80 w-80 rounded-full bg-brand-100/30 blur-3xl" />
+        <div className="absolute -left-40 bottom-0 h-80 w-80 rounded-full bg-emerald-100/20 blur-3xl" />
 
-        <div className="relative mx-auto max-w-6xl px-8 py-24">
-          <div className="grid grid-cols-[1.15fr_0.85fr] items-center gap-16">
-
-            {/* Hero content */}
-            <div>
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-3.5 py-1.5 text-xs font-semibold text-brand-700">
-                <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                Safe, verified companionship
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20 sm:py-28 lg:py-32">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            {/* Hero Content */}
+            <div className="space-y-8">
+              {/* Tagline Badge */}
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" icon="✓">
+                  Safe, verified companionship
+                </Badge>
               </div>
 
-              <h1 className="max-w-3xl text-5xl font-bold leading-[1.08] tracking-tight text-neutral-950">
-                Find the right
-                <span className="text-brand-600"> companion </span>
-                for whatever's next.
-              </h1>
+              {/* Main Headline */}
+              <div className="space-y-4">
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight tracking-tight text-neutral-900">
+                  Find the perfect
+                  <span className="block bg-gradient-brand bg-clip-text text-transparent">
+                    companion
+                  </span>
+                  for your next adventure
+                </h1>
 
-              <p className="mt-6 max-w-2xl text-lg leading-8 text-neutral-600">
-                Hiking partners, travel companions, event plus-ones, or simply
-                someone to spend time with. Discover verified people for
-                genuine, non-sexual activities and social experiences.
-              </p>
+                <p className="text-lg sm:text-xl text-neutral-600 leading-relaxed max-w-lg">
+                  Discover verified companions for hiking, travel, events, and genuine social experiences. 
+                  Connect with real people who share your interests.
+                </p>
+              </div>
 
-              <div className="mt-8 flex items-center gap-3">
-                <Link
-                  to="/partners"
-                  className="rounded-xl bg-brand-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 hover:shadow-md"
-                >
-                  Find a companion
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                <Link to="/partners">
+                  <Button variant="primary" size="lg" className="sm:w-auto">
+                    Discover Companions
+                  </Button>
                 </Link>
 
-                <Link
-                  to="/partner/dashboard"
-                  className="rounded-xl border border-neutral-300 bg-white px-6 py-3 text-sm font-semibold text-neutral-700 transition hover:border-neutral-400 hover:bg-neutral-50"
-                >
-                  Become a companion
+                <Link to="/partner/dashboard">
+                  <Button variant="outline" size="lg" className="sm:w-auto">
+                    Become a Companion
+                  </Button>
                 </Link>
               </div>
 
-              <div className="mt-8 flex items-center gap-6 text-sm text-neutral-500">
+              {/* Trust Indicators */}
+              <div className="flex flex-wrap gap-4 pt-8 border-t border-neutral-200">
                 <div className="flex items-center gap-2">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-green-50 text-xs text-green-600">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
                     ✓
+                  </div>
+                  <span className="text-sm font-medium text-neutral-600">
+                    Verified profiles
                   </span>
-                  Verified profiles
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-50 text-xs text-brand-600">
-                    🛡
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-100 text-brand-600">
+                    🛡️
+                  </div>
+                  <span className="text-sm font-medium text-neutral-600">
+                    Safety tools
                   </span>
-                  Safety tools
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-orange-50 text-xs">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-100 text-amber-600">
                     💬
+                  </div>
+                  <span className="text-sm font-medium text-neutral-600">
+                    Secure chat
                   </span>
-                  Secure chat
                 </div>
               </div>
             </div>
 
-            {/* Hero visual */}
-            <div className="relative">
-              <div className="rounded-[2rem] border border-neutral-200 bg-neutral-50 p-5 shadow-xl">
+            {/* Hero Visual - Premium Companion Card */}
+            <div className="relative hidden lg:block">
+              {/* Main card */}
+              <div className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-2xl overflow-hidden">
+                {/* Featured companion card */}
+                <div className="rounded-2xl bg-gradient-subtle overflow-hidden">
+                  {/* Image placeholder */}
+                  <div className="h-48 bg-gradient-brand opacity-20 flex items-center justify-center">
+                    <span className="text-6xl">👤</span>
+                  </div>
 
-                <div className="rounded-2xl bg-white p-5 shadow-sm">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
-                        Popular activity
-                      </p>
-                      <h3 className="mt-1 text-lg font-bold text-neutral-900">
-                        Weekend Hiking
-                      </h3>
+                  <div className="p-6 space-y-4">
+                    {/* Header with name and status */}
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
+                          Featured Companion
+                        </p>
+                        <h3 className="text-2xl font-bold text-neutral-900 mt-1">
+                          Priya Sharma
+                        </h3>
+                      </div>
+
+                      <Badge variant="success" size="sm">
+                        Available
+                      </Badge>
                     </div>
 
-                    <span className="rounded-full bg-green-50 px-2.5 py-1 text-xs font-semibold text-green-700">
-                      Available
+                    {/* Location & Services */}
+                    <div className="space-y-2">
+                      <p className="text-sm text-neutral-600">
+                        📍 Bhopal, India
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        <Badge size="sm">Hiking</Badge>
+                        <Badge size="sm">Travel</Badge>
+                        <Badge size="sm">Photography</Badge>
+                      </div>
+                    </div>
+
+                    {/* Rating & Price */}
+                    <div className="grid grid-cols-2 gap-4 py-4 border-y border-neutral-200">
+                      <div>
+                        <p className="text-xs text-neutral-500">Rating</p>
+                        <div className="flex items-center gap-1 mt-1">
+                          <span className="text-lg">⭐</span>
+                          <span className="font-bold text-neutral-900">4.9</span>
+                          <span className="text-xs text-neutral-500">(24)</span>
+                        </div>
+                      </div>
+
+                      <div>
+                        <p className="text-xs text-neutral-500">Rate</p>
+                        <p className="font-bold text-neutral-900 mt-1">₹500/hr</p>
+                      </div>
+                    </div>
+
+                    {/* About */}
+                    <p className="text-sm text-neutral-600 leading-relaxed">
+                      Adventure enthusiast and wildlife photographer. Love exploring new trails and sharing stories.
+                    </p>
+
+                    {/* CTA */}
+                    <Button variant="primary" fullWidth>
+                      View Profile
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Floating badge */}
+              <div className="absolute -bottom-8 -right-8 rounded-2xl bg-white border border-neutral-200 shadow-lg p-4 max-w-xs">
+                <div className="flex items-center gap-3">
+                  <div className="text-2xl">🛡️</div>
+                  <div>
+                    <p className="text-sm font-bold text-neutral-900">
+                      Safety built in
+                    </p>
+                    <p className="text-xs text-neutral-500 mt-0.5">
+                      Verified · Secure · Real people
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================================
+          ACTIVITIES/SERVICES SECTION - Image-first cards
+          ======================================================================== */}
+      <section className="relative py-20 sm:py-24 lg:py-28">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          {/* Section header */}
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-8 mb-12">
+            <div className="space-y-4">
+              <Badge variant="primary">What You're Looking For</Badge>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-neutral-900">
+                Find companionship around your interests
+              </h2>
+              <p className="text-lg text-neutral-600 max-w-2xl">
+                From outdoor adventures to social activities, discover someone who genuinely shares your passion.
+              </p>
+            </div>
+
+            <Link to="/partners">
+              <Button variant="ghost">
+                Explore All →
+              </Button>
+            </Link>
+          </div>
+
+          {/* Activity cards grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {activities.map((activity) => (
+              <Link key={activity.title} to="/partners">
+                <Card 
+                  interactive 
+                  className="h-full overflow-hidden hover:shadow-card-hover transition-all duration-300"
+                >
+                  {/* Icon as background */}
+                  <div className="h-32 bg-gradient-subtle flex items-center justify-center text-5xl relative overflow-hidden group">
+                    <span className="transform group-hover:scale-110 transition-transform duration-300">
+                      {activity.icon}
                     </span>
                   </div>
 
-                  <div className="mt-5 flex items-center gap-4">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-100 text-xl">
-                      👩
-                    </div>
-
-                    <div className="flex-1">
-                      <p className="font-semibold text-neutral-900">
-                        Ananya Sharma
-                      </p>
-
-                      <p className="mt-0.5 text-xs text-neutral-500">
-                        Hiking · Bhopal
-                      </p>
-
-                      <div className="mt-1 flex items-center gap-1 text-xs">
-                        <span className="text-amber-500">★</span>
-                        <span className="font-semibold text-neutral-700">
-                          4.9
-                        </span>
-                        <span className="text-neutral-400">
-                          · 24 reviews
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-5 grid grid-cols-2 gap-3">
-                    <div className="rounded-xl bg-neutral-50 px-3 py-2.5">
-                      <p className="text-[11px] text-neutral-400">
-                        Starting from
-                      </p>
-                      <p className="mt-0.5 font-semibold text-neutral-900">
-                        ₹500/hr
+                  {/* Card content */}
+                  <CardBody className="space-y-4">
+                    <div>
+                      <h3 className="text-lg font-bold text-neutral-900">
+                        {activity.title}
+                      </h3>
+                      <p className="text-sm text-neutral-600 mt-2 leading-relaxed">
+                        {activity.description}
                       </p>
                     </div>
 
-                    <div className="rounded-xl bg-neutral-50 px-3 py-2.5">
-                      <p className="text-[11px] text-neutral-400">
-                        Verification
-                      </p>
-                      <p className="mt-0.5 font-semibold text-green-600">
-                        Verified ✓
-                      </p>
+                    <div className="pt-4 border-t border-neutral-200">
+                      <span className="text-sm font-semibold text-brand-600 inline-flex items-center gap-2">
+                        Explore <span>→</span>
+                      </span>
                     </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    className="mt-4 w-full rounded-xl bg-brand-600 py-2.5 text-sm font-semibold text-white"
-                  >
-                    View companion
-                  </button>
-                </div>
-
-                <div className="mt-4 flex items-center gap-3 rounded-2xl border border-neutral-200 bg-white px-4 py-3 shadow-sm">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-green-50 text-green-600">
-                    🛡
-                  </div>
-
-                  <div>
-                    <p className="text-xs font-semibold text-neutral-800">
-                      Safety built into every experience
-                    </p>
-                    <p className="mt-0.5 text-[11px] text-neutral-400">
-                      Reporting · Blocking · SOS support
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="absolute -bottom-5 -left-8 rounded-2xl border border-neutral-200 bg-white px-4 py-3 shadow-lg">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-green-50 text-green-600">
-                    ✓
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-neutral-900">
-                      Verified community
-                    </p>
-                    <p className="text-[11px] text-neutral-400">
-                      Meet with confidence
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
+                  </CardBody>
+                </Card>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Activities */}
-      <section className="mx-auto max-w-6xl px-8 py-20">
-        <div className="flex items-end justify-between">
-          <div>
-            <p className="text-sm font-semibold text-brand-600">
-              WHAT ARE YOU LOOKING FOR?
-            </p>
-
-            <h2 className="mt-2 text-3xl font-bold tracking-tight text-neutral-900">
-              Find companionship around your interests
+      {/* ========================================================================
+          HOW IT WORKS SECTION
+          ======================================================================== */}
+      <section className="relative py-20 sm:py-24 lg:py-28 bg-neutral-50 border-y border-neutral-200">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          {/* Section header */}
+          <div className="text-center mb-16">
+            <Badge variant="primary">Simple & Safe</Badge>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-neutral-900 mt-4">
+              How SuperBuddy Works
             </h2>
-
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-neutral-500">
-              From outdoor adventures to everyday social activities, find
-              someone who actually wants to do the same things.
+            <p className="text-lg text-neutral-600 max-w-2xl mx-auto mt-4">
+              Finding your perfect companion is easy, safe, and transparent.
             </p>
           </div>
 
-          <Link
-            to="/partners"
-            className="text-sm font-semibold text-brand-600 hover:underline"
-          >
-            Explore all companions →
-          </Link>
-        </div>
-
-        <div className="mt-10 grid grid-cols-4 gap-5">
-          {activities.map((activity) => (
-            <Link
-              key={activity.title}
-              to="/partners"
-              className="group rounded-2xl border border-neutral-200 bg-white p-5 transition hover:-translate-y-1 hover:border-brand-200 hover:shadow-lg"
-            >
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-50 text-2xl transition group-hover:bg-brand-50">
-                {activity.icon}
-              </div>
-
-              <h3 className="mt-5 font-semibold text-neutral-900">
-                {activity.title}
-              </h3>
-
-              <p className="mt-2 text-sm leading-6 text-neutral-500">
-                {activity.description}
-              </p>
-
-              <span className="mt-4 inline-block text-xs font-semibold text-brand-600">
-                Explore →
-              </span>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* How it works */}
-      <section className="border-y border-neutral-200 bg-white">
-        <div className="mx-auto max-w-6xl px-8 py-20">
-          <div className="text-center">
-            <p className="text-sm font-semibold text-brand-600">
-              SIMPLE & SAFE
-            </p>
-
-            <h2 className="mt-2 text-3xl font-bold tracking-tight">
-              How SuperBuddy works
-            </h2>
-
-            <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-neutral-500">
-              Finding someone to share an experience with shouldn't be
-              complicated.
-            </p>
-          </div>
-
-          <div className="mt-12 grid grid-cols-3 gap-8">
-            {[
-              {
-                number: '01',
-                title: 'Discover',
-                text: 'Browse verified companions and find people offering activities that match your plans.',
-              },
-              {
-                number: '02',
-                title: 'Request',
-                text: 'Choose an activity, select your preferred details, and send a booking request.',
-              },
-              {
-                number: '03',
-                title: 'Meet & enjoy',
-                text: 'Chat beforehand, confirm the details, and enjoy your activity together.',
-              },
-            ].map((step) => (
+          {/* Steps grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {steps.map((step, index) => (
               <div key={step.number} className="relative">
-                <span className="text-5xl font-bold text-brand-100">
+                {/* Step number - large background */}
+                <div className="absolute -top-8 -left-4 text-7xl font-bold text-neutral-100 -z-10">
                   {step.number}
-                </span>
-
-                <h3 className="mt-2 text-lg font-semibold text-neutral-900">
-                  {step.title}
-                </h3>
-
-                <p className="mt-2 text-sm leading-6 text-neutral-500">
-                  {step.text}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Safety */}
-      <section className="mx-auto max-w-6xl px-8 py-20">
-        <div className="grid grid-cols-[0.9fr_1.1fr] items-center gap-16">
-
-          <div>
-            <p className="text-sm font-semibold text-brand-600">
-              SAFETY COMES FIRST
-            </p>
-
-            <h2 className="mt-2 text-3xl font-bold leading-tight tracking-tight">
-              Built for real-world connections, with safety at the center.
-            </h2>
-
-            <p className="mt-4 text-sm leading-7 text-neutral-500">
-              SuperBuddy is designed around legitimate social and activity
-              based companionship. We don't facilitate sexual services or
-              solicitation.
-            </p>
-
-            <Link
-              to="/partners"
-              className="mt-7 inline-flex rounded-xl bg-neutral-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-neutral-800"
-            >
-              Explore the community
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-3 gap-4">
-            {features.map((feature) => (
-              <div
-                key={feature.title}
-                className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm"
-              >
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
-                  {feature.icon}
                 </div>
 
-                <h3 className="mt-4 text-sm font-semibold text-neutral-900">
-                  {feature.title}
-                </h3>
+                {/* Step card */}
+                <Card className="h-full">
+                  <CardBody className="space-y-4">
+                    {/* Icon */}
+                    <div className="inline-flex items-center justify-center h-12 w-12 rounded-xl bg-brand-50 text-2xl">
+                      {step.icon}
+                    </div>
 
-                <p className="mt-2 text-xs leading-5 text-neutral-500">
-                  {feature.description}
-                </p>
+                    {/* Title */}
+                    <h3 className="text-2xl font-bold text-neutral-900">
+                      {step.title}
+                    </h3>
+
+                    {/* Description */}
+                    <p className="text-neutral-600 leading-relaxed">
+                      {step.description}
+                    </p>
+
+                    {/* Connector line to next step (hidden on last) */}
+                    {index < steps.length - 1 && (
+                      <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-0.5 bg-gradient-brand" />
+                    )}
+                  </CardBody>
+                </Card>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="bg-neutral-900">
-        <div className="mx-auto max-w-6xl px-8 py-16">
-          <div className="flex items-center justify-between gap-10">
-            <div>
-              <h2 className="text-3xl font-bold text-white">
-                Got plans? Find someone to share them with.
-              </h2>
+      {/* ========================================================================
+          TRUST & SAFETY SECTION
+          ======================================================================== */}
+      <section className="relative py-20 sm:py-24 lg:py-28">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            {/* Content */}
+            <div className="space-y-8">
+              <div>
+                <Badge variant="primary">Safety Comes First</Badge>
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-neutral-900 mt-4">
+                  Built for real connections, with safety at the center
+                </h2>
+              </div>
 
-              <p className="mt-3 text-sm text-neutral-400">
-                Discover companions for activities, events, travel and more.
+              <div className="space-y-4">
+                <p className="text-lg text-neutral-600 leading-relaxed">
+                  SuperBuddy is designed exclusively for legitimate social companionship and activity-based connections. We maintain strict community standards and don't facilitate any inappropriate services.
+                </p>
+
+                <p className="text-lg text-neutral-600 leading-relaxed">
+                  Every profile is verified, every interaction is monitored, and every member has access to safety tools.
+                </p>
+              </div>
+
+              <Link to="/partners">
+                <Button variant="primary" size="lg">
+                  Explore Safe Community →
+                </Button>
+              </Link>
+            </div>
+
+            {/* Trust features cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {trustFeatures.map((feature) => (
+                <Card key={feature.title} className="bg-gradient-subtle border-0">
+                  <CardBody className="space-y-4">
+                    <div className="inline-flex items-center justify-center h-12 w-12 rounded-xl bg-white">
+                      <span className="text-2xl">{feature.icon}</span>
+                    </div>
+
+                    <div>
+                      <h3 className="text-lg font-bold text-neutral-900">
+                        {feature.title}
+                      </h3>
+                      <p className="text-sm text-neutral-600 mt-2 leading-relaxed">
+                        {feature.description}
+                      </p>
+                    </div>
+                  </CardBody>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================================
+          PREMIUM CTA SECTION
+          ======================================================================== */}
+      <section className="relative py-16 sm:py-20 bg-gradient-brand overflow-hidden">
+        {/* Background gradient */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 rounded-full blur-3xl" />
+        </div>
+
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            <div className="space-y-6">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight">
+                Ready for your next adventure?
+              </h2>
+              <p className="text-lg text-white/80">
+                Join thousands of people discovering genuine companionship and real experiences.
               </p>
             </div>
 
-            <Link
-              to="/partners"
-              className="shrink-0 rounded-xl bg-brand-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-brand-500"
-            >
-              Find a companion
-            </Link>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Link to="/partners" className="flex-1">
+                <Button 
+                  variant="primary" 
+                  size="lg" 
+                  fullWidth 
+                  className="bg-white text-brand-600 hover:bg-neutral-100"
+                >
+                  Find a Companion
+                </Button>
+              </Link>
+
+              <Link to="/partner/dashboard" className="flex-1">
+                <Button 
+                  variant="ghost" 
+                  size="lg" 
+                  fullWidth 
+                  className="text-white border-white hover:bg-white/10"
+                >
+                  Become a Companion
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* API status — dev visibility */}
-      <section className="mx-auto max-w-6xl px-8 py-8">
-        <div className="rounded-xl border border-neutral-200 bg-white px-5 py-4 text-sm">
-          <span className="font-medium text-neutral-700">
-            API status:
-          </span>{' '}
+      {/* ========================================================================
+          API STATUS (Dev visibility - can be removed in production)
+          ======================================================================== */}
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+        <Card className="bg-gradient-subtle border-0">
+          <CardBody className="text-sm">
+            <span className="font-medium text-neutral-700">
+              API Status:
+            </span>{' '}
 
-          {isLoading && (
-            <span className="text-neutral-500">
-              Checking…
-            </span>
-          )}
+            {isLoading && (
+              <span className="text-neutral-500">
+                Checking…
+              </span>
+            )}
 
-          {isError && (
-            <span className="text-red-600">
-              Unreachable (
-              {error instanceof Error
-                ? error.message
-                : 'unknown error'}
-              )
-            </span>
-          )}
+            {isError && (
+              <span className="text-red-600">
+                Unreachable (
+                {error instanceof Error
+                  ? error.message
+                  : 'unknown error'}
+                )
+              </span>
+            )}
 
-          {data && (
-            <span className="text-green-600">
-              {data.data.status} — {data.message}
-            </span>
-          )}
-        </div>
+            {data && (
+              <span className="text-emerald-600">
+                {data.data.status} — {data.message}
+              </span>
+            )}
+          </CardBody>
+        </Card>
       </section>
     </div>
   );
