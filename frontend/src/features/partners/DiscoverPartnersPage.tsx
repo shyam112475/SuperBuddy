@@ -23,7 +23,7 @@ import type { PartnerSearchFilters } from './types';
  */
 export function DiscoverPartnersPage() {
   const [filters, setFilters] = useState<PartnerSearchFilters>({ page: 1 });
-  const [showFilters, setShowFilters] = useState(false);
+  const [_showFilters, _setShowFilters] = useState(false);
 
   const { data, isLoading, isError } = useSearchPartners(filters);
   const { data: categories } = useServiceCategories();
