@@ -6,6 +6,11 @@ import { useAuthStore } from '../../store/authStore';
 import { CreateBookingForm } from '../bookings/CreateBookingForm';
 import { StarRating } from '../../components/StarRating';
 import { ReviewList } from '../reviews/ReviewList';
+import { Card, CardBody, CardImage } from '../../components/Card';
+import { Badge } from '../../components/Badge';
+import { Avatar } from '../../components/Avatar';
+import { Button } from '../../components/Button';
+import { cn } from '../../utils/cn';
 
 const DAY_LABELS: Record<string, string> = {
   SUNDAY: 'Sun',
@@ -17,25 +22,33 @@ const DAY_LABELS: Record<string, string> = {
   SATURDAY: 'Sat',
 };
 
+/**
+ * ============================================================================
+ * PREMIUM PARTNER DETAIL PAGE - Marketplace Profile
+ * ============================================================================
+ * 
+ * Features:
+ * - Full-width hero profile image with overlay
+ * - Premium profile header with verification
+ * - Enhanced about section (card-based)
+ * - Services section (card grid)
+ * - Premium reviews with better styling
+ * - Trust & safety section
+ * - Sticky booking CTA (desktop sidebar + mobile bottom)
+ */
 export function PartnerDetailPage() {
   const { id } = useParams<{ id: string }>();
-
   const [searchParams, setSearchParams] = useSearchParams();
+  const [showMobileBooking, setShowMobileBooking] = useState(false);
 
   const { data: partner, isLoading, isError } = usePartnerDetail(id);
-
   const currentUser = useAuthStore((s) => s.user);
 
   const [requestingOfferingId, setRequestingOfferingId] =
     useState<string | null>(null);
 
-  /*
-   * When user comes from:
-   *
-   * /partners/:id?book=true
-   *
-   * automatically open the first available activity.
-   */
+  const isOwnProfile = currentUser?.id === partner?.partner.userId;
+
   useEffect(() => {
     if (
       searchParams.get('book') === 'true' &&
@@ -44,34 +57,29 @@ export function PartnerDetailPage() {
       !requestingOfferingId
     ) {
       setRequestingOfferingId(partner.services[0].id);
-
-      // Remove ?book=true from URL after opening booking form.
       setSearchParams({}, { replace: true });
     }
-  }, [
-    searchParams,
-    partner,
-    requestingOfferingId,
-    setSearchParams,
-  ]);
+  }, [searchParams, partner, requestingOfferingId, setSearchParams]);
 
+  // ========================================================================
+  // LOADING STATE
+  // ========================================================================
   if (isLoading) {
     return (
-      <div className="min-h-[70vh] bg-neutral-50">
-        <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
-          <div className="animate-pulse">
-            <div className="h-4 w-28 rounded bg-neutral-200" />
+      <div className="min-h-[70vh] bg-neutral-0">
+        <div className="animate-pulse">
+          {/* Hero skeleton */}
+          <div className="h-96 sm:h-[500px] bg-neutral-200" />
 
-            <div className="mt-8 rounded-3xl border border-neutral-200 bg-white p-6">
-              <div className="flex gap-5">
-                <div className="h-24 w-24 rounded-2xl bg-neutral-200" />
-
-                <div className="flex-1">
-                  <div className="h-6 w-48 rounded bg-neutral-200" />
-
-                  <div className="mt-3 h-4 w-64 rounded bg-neutral-200" />
-
-                  <div className="mt-3 h-4 w-32 rounded bg-neutral-200" />
+          {/* Content skeleton */}
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+            <div className="space-y-6">
+              <div className="h-8 w-48 rounded bg-neutral-200" />
+              <div className="h-4 w-72 rounded bg-neutral-200" />
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                <div className="lg:col-span-2 space-y-4">
+                  <div className="h-4 w-full rounded bg-neutral-200" />
+                  <div className="h-4 w-5/6 rounded bg-neutral-200" />
                 </div>
               </div>
             </div>
@@ -81,99 +89,128 @@ export function PartnerDetailPage() {
     );
   }
 
+  // ========================================================================
+  // ERROR STATE
+  // ========================================================================
   if (isError || !partner) {
     return (
-      <div className="flex min-h-[70vh] items-center justify-center bg-neutral-50 px-6">
-        <div className="w-full max-w-md rounded-3xl border border-neutral-200 bg-white p-8 text-center shadow-sm">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-neutral-100 text-2xl">
-            ?
-          </div>
-
-          <h1 className="mt-4 text-lg font-semibold text-neutral-900">
-            Partner not found
-          </h1>
-
-          <p className="mt-2 text-sm text-neutral-500">
-            This companion may no longer be available.
-          </p>
-
-          <Link
-            to="/partners"
-            className="mt-6 inline-flex rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700"
-          >
-            Back to companions
-          </Link>
-        </div>
+      <div className="flex min-h-[70vh] items-center justify-center bg-neutral-0 px-4">
+        <Card className="max-w-md">
+          <CardBody className="text-center space-y-4 py-12">
+            <div className="text-5xl">😕</div>
+            <div>
+              <h1 className="text-2xl font-bold text-neutral-900">
+                Companion not found
+              </h1>
+              <p className="mt-2 text-neutral-600">
+                This companion may no longer be available.
+              </p>
+            </div>
+            <Link to="/partners">
+              <Button variant="primary">
+                Browse Other Companions
+              </Button>
+            </Link>
+          </CardBody>
+        </Card>
       </div>
     );
   }
 
-  const initials = partner.partner.fullName
-    .split(' ')
-    .map((p) => p[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
-
-  const isOwnProfile = currentUser?.id === partner.partner.id;
-
+  // ========================================================================
+  // RENDER: PREMIUM PARTNER DETAIL PAGE
+  // ========================================================================
   return (
-    <div className="min-h-screen bg-neutral-50">
-      <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-10">
+    <div className="min-h-screen bg-neutral-0">
+      {/* ====================================================================
+          PREMIUM HERO SECTION - Full-width profile image
+          ==================================================================== */}
+      <div className="relative w-full overflow-hidden">
+        {/* Hero image container */}
+        <div className="relative h-80 sm:h-96 lg:h-[500px] bg-neutral-200 overflow-hidden group">
+          {partner.partner.profileImage ? (
+            <img
+              src={partner.partner.profileImage}
+              alt={partner.partner.fullName}
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          ) : (
+            <div className="h-full w-full bg-gradient-brand flex items-center justify-center text-6xl opacity-10">
+              👤
+            </div>
+          )}
 
-        {/* Back */}
-        <Link
-          to="/partners"
-          className="inline-flex items-center gap-2 text-sm font-medium text-neutral-500 transition hover:text-neutral-900"
-        >
-          <span className="text-lg">←</span>
-          Find companions
-        </Link>
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
 
-        {/* Profile Header */}
-        <section className="mt-5 overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-sm">
-          <div className="h-28 bg-gradient-to-r from-brand-100 via-brand-50 to-orange-50 sm:h-36" />
+          {/* Top badges - Verification & Status */}
+          <div className="absolute top-4 left-4 sm:top-6 sm:left-6 flex items-center gap-2">
+            {partner.isVerified && (
+              <Badge variant="success" size="sm" icon="✓">
+                Verified
+              </Badge>
+            )}
+          </div>
 
-          <div className="px-5 pb-6 sm:px-8">
-            <div className="-mt-12 flex flex-col gap-5 sm:-mt-14 sm:flex-row sm:items-end">
+          <div className="absolute top-4 right-4 sm:top-6 sm:right-6">
+            <Badge variant="secondary" size="sm">
+              Available
+            </Badge>
+          </div>
 
-              {/* Avatar */}
-              <div className="h-24 w-24 shrink-0 overflow-hidden rounded-2xl border-4 border-white bg-brand-100 shadow-md sm:h-28 sm:w-28">
-                {partner.partner.profileImage ? (
-                  <img
-                    src={partner.partner.profileImage}
-                    alt={partner.partner.fullName}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center text-2xl font-bold text-brand-700">
-                    {initials}
+          {/* Rating overlay - Bottom left */}
+          <div className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6">
+            {partner.reviewCount > 0 ? (
+              <div className="bg-white/95 backdrop-blur-sm rounded-2xl px-4 py-2 shadow-lg">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">⭐</span>
+                  <div>
+                    <p className="font-bold text-neutral-900">
+                      {partner.averageRating?.toFixed(1)}
+                    </p>
+                    <p className="text-xs text-neutral-600">
+                      {partner.reviewCount} reviews
+                    </p>
                   </div>
-                )}
-              </div>
-
-              {/* Basic Info */}
-              <div className="min-w-0 flex-1 pb-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="text-2xl font-bold tracking-tight text-neutral-900 sm:text-3xl">
-                    {partner.partner.fullName}
-                  </h1>
-
-                  <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-1 text-xs font-semibold text-green-700">
-                    <span>✓</span>
-                    Verified
-                  </span>
                 </div>
-
-                <p className="mt-1 text-base text-neutral-600">
-                  {partner.headline}
+              </div>
+            ) : (
+              <div className="bg-white/95 backdrop-blur-sm rounded-2xl px-4 py-2 shadow-lg">
+                <p className="text-sm font-semibold text-neutral-900">
+                  ✨ New companion
                 </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
 
-                <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-neutral-500">
-                  <span className="flex items-center gap-1">
-                    <span>📍</span>
-                    {partner.city}
-                    {partner.area ? `, ${partner.area}` : ''}
+      {/* ====================================================================
+          MAIN CONTENT SECTION
+          ==================================================================== */}
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
+          {/* Main content column */}
+          <div className="lg:col-span-2 space-y-12">
+            {/* =========================================================
+                PREMIUM PROFILE HEADER
+                ========================================================= */}
+            <section className="space-y-4">
+              <div>
+                <h1 className="text-4xl sm:text-5xl font-bold text-neutral-900">
+                  {partner.partner.fullName}
+                </h1>
+
+                {partner.headline && (
+                  <p className="text-lg sm:text-xl text-neutral-600 mt-2">
+                    {partner.headline}
+                  </p>
+                )}
+
+                <div className="flex flex-wrap items-center gap-4 mt-4 text-neutral-600">
+                  <span className="flex items-center gap-1.5">
+                    📍 {partner.city}
+                    {partner.area && `, ${partner.area}`}
                   </span>
 
                   {partner.reviewCount > 0 && (
@@ -182,274 +219,390 @@ export function PartnerDetailPage() {
                         value={Math.round(partner.averageRating ?? 0)}
                         size="sm"
                       />
-
-                      <strong className="text-neutral-700">
-                        {partner.averageRating?.toFixed(1)}
-                      </strong>
-
-                      <span>
-                        ({partner.reviewCount})
-                      </span>
+                      {partner.averageRating?.toFixed(1)} ({partner.reviewCount})
                     </span>
                   )}
                 </div>
               </div>
-            </div>
-          </div>
-        </section>
 
-        {/* Main */}
-        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
-
-          {/* Left */}
-          <div className="space-y-6">
-
-            {/* About */}
-            <section className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-sm sm:p-6">
-              <h2 className="text-lg font-semibold text-neutral-900">
-                About
-              </h2>
-
-              <p className="mt-3 whitespace-pre-line text-sm leading-7 text-neutral-600">
-                {partner.bio}
-              </p>
-            </section>
-
-            {/* Activities */}
-            <section className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-sm sm:p-6">
-              <div>
-                <h2 className="text-lg font-semibold text-neutral-900">
-                  Activities
-                </h2>
-
-                <p className="mt-1 text-sm text-neutral-500">
-                  Choose an activity you'd like to do together.
-                </p>
-              </div>
-
-              {partner.services.length > 0 ? (
-                <div className="mt-5 space-y-3">
-                  {partner.services.map((service) => (
-                    <div
-                      key={service.id}
-                      className={`rounded-2xl border p-4 transition ${
-                        requestingOfferingId === service.id
-                          ? 'border-brand-200 bg-brand-50/30 shadow-sm'
-                          : 'border-neutral-200 hover:border-brand-200 hover:shadow-sm'
-                      }`}
-                    >
-                      {/* Activity Header */}
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="min-w-0">
-                          <h3 className="font-semibold text-neutral-900">
-                            {service.category.name}
-                          </h3>
-
-                          {service.description && (
-                            <p className="mt-1 text-sm leading-6 text-neutral-500">
-                              {service.description}
-                            </p>
-                          )}
-                        </div>
-
-                        {service.pricePerHour && (
-                          <div className="shrink-0 text-right">
-                            <p className="text-lg font-bold text-neutral-900">
-                              ₹{service.pricePerHour}
-                            </p>
-
-                            <p className="text-xs text-neutral-400">
-                              per hour
-                            </p>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Booking CTA */}
-                      {!isOwnProfile && (
-                        <>
-                          {currentUser ? (
-                            requestingOfferingId !== service.id && (
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setRequestingOfferingId(service.id)
-                                }
-                                className="mt-4 w-full rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 active:scale-[0.99]"
-                              >
-                                Book this activity
-                              </button>
-                            )
-                          ) : (
-                            <Link
-                              to="/login"
-                              className="mt-4 block rounded-xl border border-brand-200 bg-brand-50 px-4 py-2.5 text-center text-sm font-semibold text-brand-700 transition hover:bg-brand-100"
-                            >
-                              Sign in to book
-                            </Link>
-                          )}
-
-                          {/* Booking Form */}
-                          {requestingOfferingId === service.id && (
-                            <div className="mt-4 rounded-2xl border border-brand-100 bg-brand-50/40 p-4">
-                              <CreateBookingForm
-                                partnerProfileId={partner.id}
-                                offeringId={service.id}
-                                offeringLabel={service.category.name}
-                                onDone={() =>
-                                  setRequestingOfferingId(null)
-                                }
-                              />
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </div>
+              {/* Services tags */}
+              {partner.services.length > 0 && (
+                <div className="flex flex-wrap gap-2 pt-4">
+                  {partner.services.slice(0, 4).map((service) => (
+                    <Badge key={service.id} variant="primary">
+                      {service.category.name}
+                    </Badge>
                   ))}
+
+                  {partner.services.length > 4 && (
+                    <Badge variant="neutral">
+                      +{partner.services.length - 4} more
+                    </Badge>
+                  )}
                 </div>
-              ) : (
-                <p className="mt-5 text-sm text-neutral-500">
-                  No activities listed yet.
-                </p>
               )}
             </section>
 
-            {/* Availability */}
-            {partner.availability.length > 0 && (
-              <section className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-sm sm:p-6">
-                <h2 className="text-lg font-semibold text-neutral-900">
-                  Typical availability
+            {/* =========================================================
+                ABOUT SECTION
+                ========================================================= */}
+            <section>
+              <Card>
+                <CardBody className="space-y-6">
+                  <div>
+                    <h2 className="text-2xl font-bold text-neutral-900 mb-4">
+                      About {partner.partner.fullName.split(' ')[0]}
+                    </h2>
+
+                    {partner.partner.bio && (
+                      <p className="text-lg text-neutral-700 leading-relaxed whitespace-pre-wrap">
+                        {partner.partner.bio}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Profile stats */}
+                  <div className="border-t border-neutral-200 pt-6 grid grid-cols-2 sm:grid-cols-3 gap-6">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
+                        Member Since
+                      </p>
+                      <p className="text-base font-semibold text-neutral-900 mt-1">
+                        {new Date(partner.partner.createdAt).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                        })}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
+                        Response Time
+                      </p>
+                      <p className="text-base font-semibold text-neutral-900 mt-1">
+                        Usually &lt;1hr
+                      </p>
+                    </div>
+
+                    {partner.languageSpoken && (
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
+                          Languages
+                        </p>
+                        <p className="text-base font-semibold text-neutral-900 mt-1">
+                          {partner.languageSpoken}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </CardBody>
+              </Card>
+            </section>
+
+            {/* =========================================================
+                SERVICES & PRICING SECTION
+                ========================================================= */}
+            {partner.services.length > 0 && (
+              <section>
+                <h2 className="text-2xl font-bold text-neutral-900 mb-6">
+                  Services & Pricing
                 </h2>
 
-                <p className="mt-1 text-sm text-neutral-500">
-                  Their usual availability. Exact timing can be discussed while
-                  booking.
-                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {partner.services.map((service) => (
+                    <Card key={service.id} className="flex flex-col">
+                      <CardBody className="flex-1 space-y-4">
+                        <div>
+                          <h3 className="text-lg font-bold text-neutral-900">
+                            {service.name}
+                          </h3>
 
-                <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                  {partner.availability.map((slot, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between rounded-xl bg-neutral-50 px-4 py-3"
-                    >
-                      <span className="text-sm font-semibold text-neutral-800">
-                        {DAY_LABELS[slot.dayOfWeek]}
-                      </span>
+                          <p className="text-sm text-neutral-600 mt-1">
+                            {service.category.name}
+                          </p>
+                        </div>
 
-                      <span className="text-sm text-neutral-500">
-                        {slot.startTime} – {slot.endTime}
-                      </span>
-                    </div>
+                        {service.description && (
+                          <p className="text-sm text-neutral-600 line-clamp-2">
+                            {service.description}
+                          </p>
+                        )}
+
+                        <div className="border-t border-neutral-200 pt-4 space-y-2">
+                          <div className="flex items-baseline justify-between">
+                            <span className="text-sm text-neutral-600">Rate</span>
+                            <span className="text-2xl font-bold text-brand-600">
+                              ₹{service.pricePerHour}
+                            </span>
+                          </div>
+
+                          {service.minimumHours && (
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm text-neutral-600">Min. hours</span>
+                              <span className="font-medium text-neutral-900">
+                                {service.minimumHours}h
+                              </span>
+                            </div>
+                          )}
+                        </div>
+
+                        {!isOwnProfile && (
+                          <Button
+                            variant="primary"
+                            fullWidth
+                            onClick={() =>
+                              setRequestingOfferingId(service.id)
+                            }
+                          >
+                            Book This Service
+                          </Button>
+                        )}
+                      </CardBody>
+                    </Card>
                   ))}
                 </div>
               </section>
             )}
 
-            {/* Reviews */}
-            <section className="rounded-3xl border border-neutral-200 bg-white p-5 shadow-sm sm:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-semibold text-neutral-900">
-                    Reviews
-                  </h2>
+            {/* =========================================================
+                TRUST & SAFETY SECTION
+                ========================================================= */}
+            <section>
+              <h2 className="text-2xl font-bold text-neutral-900 mb-6">
+                Safety & Trust
+              </h2>
 
-                  <p className="mt-1 text-sm text-neutral-500">
-                    What people say about{' '}
-                    {partner.partner.fullName.split(' ')[0]}.
-                  </p>
-                </div>
+              <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
+                {/* Verified */}
+                <Card className="bg-gradient-subtle border-0">
+                  <CardBody className="space-y-3">
+                    <div className="inline-flex items-center justify-center h-10 w-10 rounded-lg bg-white">
+                      <span className="text-xl">✓</span>
+                    </div>
+
+                    <div>
+                      <h3 className="font-bold text-neutral-900">
+                        Verified
+                      </h3>
+                      <p className="text-sm text-neutral-600 mt-1">
+                        Identity verified by SuperBuddy
+                      </p>
+                    </div>
+                  </CardBody>
+                </Card>
+
+                {/* Safety Tools */}
+                <Card className="bg-gradient-subtle border-0">
+                  <CardBody className="space-y-3">
+                    <div className="inline-flex items-center justify-center h-10 w-10 rounded-lg bg-white">
+                      <span className="text-xl">🛡️</span>
+                    </div>
+
+                    <div>
+                      <h3 className="font-bold text-neutral-900">
+                        Safety Tools
+                      </h3>
+                      <p className="text-sm text-neutral-600 mt-1">
+                        Report & SOS support
+                      </p>
+                    </div>
+                  </CardBody>
+                </Card>
+
+                {/* Messaging */}
+                <Card className="bg-gradient-subtle border-0">
+                  <CardBody className="space-y-3">
+                    <div className="inline-flex items-center justify-center h-10 w-10 rounded-lg bg-white">
+                      <span className="text-xl">💬</span>
+                    </div>
+
+                    <div>
+                      <h3 className="font-bold text-neutral-900">
+                        Secure Chat
+                      </h3>
+                      <p className="text-sm text-neutral-600 mt-1">
+                        In-app messaging only
+                      </p>
+                    </div>
+                  </CardBody>
+                </Card>
+
+                {/* Reviews */}
+                <Card className="bg-gradient-subtle border-0">
+                  <CardBody className="space-y-3">
+                    <div className="inline-flex items-center justify-center h-10 w-10 rounded-lg bg-white">
+                      <span className="text-xl">⭐</span>
+                    </div>
+
+                    <div>
+                      <h3 className="font-bold text-neutral-900">
+                        Reviews
+                      </h3>
+                      <p className="text-sm text-neutral-600 mt-1">
+                        Real verified reviews
+                      </p>
+                    </div>
+                  </CardBody>
+                </Card>
+              </div>
+            </section>
+
+            {/* =========================================================
+                REVIEWS SECTION
+                ========================================================= */}
+            <section>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-neutral-900">
+                  Reviews & Ratings
+                </h2>
 
                 {partner.reviewCount > 0 && (
-                  <div className="hidden text-right sm:block">
-                    <div className="flex items-center gap-2">
+                  <div className="text-right">
+                    <div className="flex items-center gap-2 justify-end">
                       <StarRating
                         value={Math.round(partner.averageRating ?? 0)}
                         size="sm"
                       />
-
-                      <span className="font-semibold text-neutral-900">
+                      <span className="font-bold text-neutral-900">
                         {partner.averageRating?.toFixed(1)}
                       </span>
                     </div>
-
-                    <p className="mt-0.5 text-xs text-neutral-400">
+                    <p className="text-sm text-neutral-500">
                       {partner.reviewCount} reviews
                     </p>
                   </div>
                 )}
               </div>
 
-              <div className="mt-5">
-                <ReviewList partnerId={partner.id} />
-              </div>
+              <ReviewList partnerId={partner.id} />
             </section>
           </div>
 
-          {/* Right Sidebar */}
+          {/* ========================================================================
+              DESKTOP SIDEBAR - Sticky Booking CTA
+              ======================================================================== */}
           <aside className="hidden lg:block">
-            <div className="sticky top-6 rounded-3xl border border-neutral-200 bg-white p-5 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
-                Book a companion
-              </p>
+            <div className="sticky top-20 rounded-2xl border border-neutral-200 bg-white p-6 shadow-card space-y-6">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
+                  Ready to connect?
+                </p>
+                <h3 className="text-xl font-bold text-neutral-900 mt-2">
+                  Book {partner.partner.fullName.split(' ')[0]}
+                </h3>
+                <p className="text-sm text-neutral-600 mt-2">
+                  Choose a service above and send a booking request.
+                </p>
+              </div>
 
-              <h3 className="mt-2 text-lg font-semibold text-neutral-900">
-                Find someone for your next activity
-              </h3>
+              {!isOwnProfile && partner.services.length > 0 && (
+                <>
+                  <Button
+                    variant="primary"
+                    fullWidth
+                    size="lg"
+                    onClick={() =>
+                      setRequestingOfferingId(partner.services[0].id)
+                    }
+                  >
+                    Book Now
+                  </Button>
 
-              <p className="mt-2 text-sm leading-6 text-neutral-500">
-                Choose an activity above and send a booking request.
-              </p>
+                  <Button
+                    variant="outline"
+                    fullWidth
+                    onClick={() => {
+                      const el = document.getElementById('services');
+                      el?.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                  >
+                    View Services
+                  </Button>
+                </>
+              )}
 
-              <div className="mt-5 space-y-3">
+              {/* Trust badges */}
+              <div className="border-t border-neutral-200 pt-6 space-y-3">
                 <div className="flex gap-3">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-50 text-sm text-brand-700">
+                  <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-sm text-emerald-600">
                     ✓
                   </span>
-
                   <div>
-                    <p className="text-sm font-medium text-neutral-800">
+                    <p className="text-sm font-medium text-neutral-900">
                       Verified companion
                     </p>
-
                     <p className="text-xs text-neutral-500">
-                      Identity verified by SuperBuddy
+                      Identity verified
                     </p>
                   </div>
                 </div>
 
                 <div className="flex gap-3">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-50 text-sm text-brand-700">
-                    🛡
+                  <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-sm text-brand-600">
+                    🛡️
                   </span>
-
                   <div>
-                    <p className="text-sm font-medium text-neutral-800">
-                      Safety features
+                    <p className="text-sm font-medium text-neutral-900">
+                      Safety first
                     </p>
-
                     <p className="text-xs text-neutral-500">
-                      Reporting and SOS support available
+                      Protected by SuperBuddy
                     </p>
                   </div>
                 </div>
               </div>
-
-              {/* Sidebar Book Button */}
-              {!isOwnProfile && partner.services.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() =>
-                    setRequestingOfferingId(partner.services[0].id)
-                  }
-                  className="mt-6 w-full rounded-xl bg-brand-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 active:scale-[0.99]"
-                >
-                  Book companion
-                </button>
-              )}
             </div>
           </aside>
         </div>
       </div>
+
+      {/* ========================================================================
+          MOBILE STICKY BOOKING CTA
+          ======================================================================== */}
+      {!isOwnProfile && partner.services.length > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 lg:hidden bg-white border-t border-neutral-200 shadow-lg p-4 safe-area-inset-bottom">
+          <Button
+            variant="primary"
+            fullWidth
+            size="lg"
+            onClick={() => setRequestingOfferingId(partner.services[0].id)}
+          >
+            Book {partner.partner.fullName.split(' ')[0]}
+          </Button>
+        </div>
+      )}
+
+      {/* ========================================================================
+          BOOKING FORM MODAL
+          ======================================================================== */}
+      {requestingOfferingId && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50">
+          <div className="flex min-h-full items-center justify-center p-4">
+            <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <CardBody className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-neutral-900">
+                    Book a Service
+                  </h2>
+                  <button
+                    onClick={() => setRequestingOfferingId(null)}
+                    className="text-neutral-500 hover:text-neutral-700"
+                    aria-label="Close"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <CreateBookingForm
+                  partnerId={partner.id}
+                  serviceId={requestingOfferingId}
+                  onSuccess={() => setRequestingOfferingId(null)}
+                />
+              </CardBody>
+            </Card>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

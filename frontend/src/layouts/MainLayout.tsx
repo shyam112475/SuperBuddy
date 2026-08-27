@@ -6,14 +6,6 @@ import { NotificationBell } from '../features/notifications/NotificationBell';
 import { Avatar } from '../components/Avatar';
 import { Button } from '../components/Button';
 import { cn } from '../utils/cn';
-import settingsIcon from '../assets/—Pngtree—settings glyph black icon_3755352.png';
-import profileIcon from '../assets/—Pngtree—man with binoculars looking to_8694411.png';// Replace with your logo Icon
-import bookingIcon from '../assets/bookings.png';
-import SearchIcon from '../assets/search.jpg';
-import AdminIcon from '../assets/admin.jpg';
-import userIcon from '../assets/user.jpg';
-import paymentIcon from '../assets/payment.jpg';
-import logoutIcon from '../assets/logout.jpg';
 
 /**
  * ============================================================================
@@ -182,7 +174,7 @@ function AuthNav({
         </Link>
 
         {/* Main Navigation Items */}
-        <NavLink to="/bookings" mobile onClick={onNavigate} icon="">
+        <NavLink to="/bookings" mobile onClick={onNavigate} icon="📅">
           My Bookings
         </NavLink>
 
@@ -190,15 +182,7 @@ function AuthNav({
           to="/partner/dashboard"
           mobile
           onClick={onNavigate}
-          icon={user.role === 'PARTNER' ? <img
-      src={userIcon}
-      alt="Settings"
-      className="w-5 h-5 object-contain"
-    /> :  <img
-      src={AdminIcon}
-      alt="Settings"
-      className="w-5 h-5 object-contain"
-    />}
+          icon={user.role === 'PARTNER' ? '👤' : '⭐'}
         >
           {user.role === 'PARTNER'
             ? 'Companion Profile'
@@ -206,13 +190,7 @@ function AuthNav({
         </NavLink>
 
         {user.role === 'ADMIN' && (
-          <NavLink to="/admin" mobile onClick={onNavigate} 
-           icon={
-    <img
-      src={AdminIcon}
-      alt="Settings"
-      className="w-5 h-5 object-contain"
-    />}>
+          <NavLink to="/admin" mobile onClick={onNavigate} icon="⚙️">
             Admin Dashboard
           </NavLink>
         )}
@@ -221,38 +199,20 @@ function AuthNav({
         <div className="my-2 border-t border-neutral-100" />
 
         {/* Secondary Navigation */}
-        <NavLink to="/profile" mobile onClick={onNavigate}  icon={
-    <img
-      src={profileIcon}
-      alt="Settings"
-      className="w-5 h-5 object-contain"
-    />
-  }>
+        <NavLink to="/profile" mobile onClick={onNavigate} icon="👤">
           My Profile
         </NavLink>
 
         <NavLink
-  to="/account/settings"
-  mobile
-  onClick={onNavigate}
-  icon={
-    <img
-      src={settingsIcon}
-      alt="Settings"
-      className="w-5 h-5 object-contain"
-    />
-  }
->
-  Settings
-</NavLink>
+          to="/account/settings"
+          mobile
+          onClick={onNavigate}
+          icon="⚙️"
+        >
+          Settings
+        </NavLink>
 
-        <NavLink to="/payments" mobile onClick={onNavigate}  icon={
-    <img
-      src={paymentIcon}
-      alt="Settings"
-      className="w-5 h-5 object-contain"
-    />
-  }>
+        <NavLink to="/payments" mobile onClick={onNavigate} icon="💳">
           Payment History
         </NavLink>
 
@@ -331,39 +291,21 @@ function AuthNav({
               to="/profile"
               className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50 rounded-lg transition-colors"
             >
-              <span>
-                 <img
-      src={userIcon}
-      alt="Settings"
-      className="w-5 h-5 object-contain"
-    />
-                </span> My Profile
+              <span>👤</span> My Profile
             </Link>
 
             <Link
               to="/bookings"
               className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50 rounded-lg transition-colors"
             >
-              <span> <img
-      src={bookingIcon}
-      alt="Settings"
-      className="w-5 h-5 object-contain"
-    /></span> My Bookings
+              <span>📅</span> My Bookings
             </Link>
 
             <Link
               to="/partner/dashboard"
               className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50 rounded-lg transition-colors"
             >
-              <span>{user.role === 'PARTNER' ?  <img
-      src={userIcon}
-      alt="Settings"
-      className="w-5 h-5 object-contain"
-    /> : <img
-      src={profileIcon}
-      alt="Settings"
-      className="w-5 h-5 object-contain"
-    /> }</span>
+              <span>{user.role === 'PARTNER' ? '👤' : '⭐'}</span>
               {user.role === 'PARTNER'
                 ? 'Companion Profile'
                 : 'Become a Companion'}
@@ -373,11 +315,7 @@ function AuthNav({
               to="/payments"
               className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50 rounded-lg transition-colors"
             >
-              <span><img
-      src={paymentIcon}
-      alt="Settings"
-      className="w-5 h-5 object-contain"
-    /></span> Payment History
+              <span>💳</span> Payment History
             </Link>
 
             {user.role === 'ADMIN' && (
@@ -385,11 +323,7 @@ function AuthNav({
                 to="/admin"
                 className="flex items-center gap-3 px-4 py-2 text-sm text-brand-600 hover:bg-brand-50 rounded-lg transition-colors font-medium"
               >
-                <span> <img
-      src={AdminIcon}
-      alt="Settings"
-      className="w-5 h-5 object-contain"
-    /></span> Admin Dashboard
+                <span>⚙️</span> Admin Dashboard
               </Link>
             )}
           </div>
@@ -403,11 +337,7 @@ function AuthNav({
               to="/account/settings"
               className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50 rounded-lg transition-colors"
             >
-              <span><img
-      src={settingsIcon}
-      alt="Settings"
-      className="w-5 h-5 object-contain"
-    /></span> Settings
+              <span>⚙️</span> Settings
             </Link>
 
             <button
@@ -419,11 +349,7 @@ function AuthNav({
                 isPending && 'opacity-50 cursor-not-allowed'
               )}
             >
-              <span><img
-      src={logoutIcon}
-      alt="Settings"
-      className="w-5 h-5 object-contain"
-    /></span> {isPending ? 'Signing out...' : 'Sign out'}
+              <span>🚪</span> {isPending ? 'Signing out...' : 'Sign out'}
             </button>
           </div>
         </div>
@@ -452,9 +378,10 @@ export function MainLayout() {
             className="group flex items-center gap-2.5 transition-opacity duration-200 hover:opacity-80"
           >
             {/* Logo Icon */}
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl text-brand-600 text-base font-bold shadow-button transition-all duration-200 group-hover:shadow-button-hover">
-              SB
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-brand text-base font-bold text-white shadow-button transition-all duration-200 group-hover:shadow-button-hover">
+              S
             </div>
+
             {/* Logo Text */}
             <div className="hidden sm:block">
               <span className="text-base lg:text-lg font-bold tracking-tight text-neutral-900">
@@ -468,12 +395,7 @@ export function MainLayout() {
 
           {/* ========== DESKTOP NAV ========== */}
           <nav className="hidden h-full items-center gap-8 lg:flex">
-            <NavLink to="/partners" >
-            <img 
-      src={SearchIcon} 
-      alt="Discover" 
-      className="h-5 w-5 object-contain" 
-    />
+            <NavLink to="/partners" icon="🔍">
               Discover
             </NavLink>
 
@@ -563,10 +485,9 @@ export function MainLayout() {
             {/* About */}
             <div className="col-span-2 sm:col-span-1">
               <div className="flex items-center gap-2 mb-4">
-                {/* Logo Icon */}
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl text-brand-600 text-base font-bold shadow-button transition-all duration-200 group-hover:shadow-button-hover">
-              SB
-            </div>
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-xs font-bold text-white">
+                  S
+                </div>
                 <span className="font-bold text-neutral-900">SuperBuddy</span>
               </div>
 

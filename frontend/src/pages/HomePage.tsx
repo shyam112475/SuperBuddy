@@ -1,10 +1,9 @@
 import { Link } from 'react-router-dom';
-
+import { useHealthCheck } from '../hooks/useHealthCheck';
 import { Button } from '../components/Button';
-import { Card, CardBody } from '../components/Card';
+import { Card,  CardBody } from '../components/Card';
 import { Badge } from '../components/Badge';
 
-import { _undefined } from 'zod/v4/core';
 
 /**
  * Activity data with enhanced descriptions for premium feel
@@ -43,17 +42,20 @@ const trustFeatures = [
   {
     icon: '✓',
     title: 'Verified People',
-    description: 'Identity verification, profile reviews, and community ratings create a trustworthy environment.',
+    description:
+      'Identity verification, profile reviews, and community ratings create a trustworthy environment.',
   },
   {
     icon: '🛡️',
     title: 'Safety First',
-    description: 'In-app reporting, blocking, emergency SOS alerts, and real-time safety support.',
+    description:
+      'In-app reporting, blocking, emergency SOS alerts, and real-time safety support.',
   },
   {
     icon: '💬',
     title: 'Stay in Control',
-    description: 'Secure messaging, activity confirmation, and complete transparency before every meet.',
+    description:
+      'Secure messaging, activity confirmation, and complete transparency before every meet.',
   },
 ];
 
@@ -81,19 +83,9 @@ const steps = [
   },
 ];
 
-// Optional: Pass these props if fetching API status from a hook like React Query
-interface HomePageProps {
-  isLoading?: boolean;
-  isError?: boolean;
-  error?: unknown;
-  data?: {
-    data: { status: string };
-    message: string;
-  } | null; // <--- Yahan '| null' add kiya
-}
+export function HomePage() {
+  const { data, isLoading, isError, error } = useHealthCheck();
 
-
-export function HomePage({ isLoading = false, isError = false, error = null, data =  null}: HomePageProps) {
   return (
     <div className="min-h-screen bg-neutral-0">
       {/* ========================================================================
@@ -118,10 +110,10 @@ export function HomePage({ isLoading = false, isError = false, error = null, dat
               {/* Main Headline */}
               <div className="space-y-4">
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight tracking-tight text-neutral-900">
-                  Find the perfect{' '}
+                  Find the perfect
                   <span className="block bg-gradient-brand bg-clip-text text-transparent">
                     companion
-                  </span>{' '}
+                  </span>
                   for your next adventure
                 </h1>
 
@@ -490,9 +482,9 @@ export function HomePage({ isLoading = false, isError = false, error = null, dat
       </section>
 
       {/* ========================================================================
-          API STATUS (Dev visibility)
+          API STATUS (Dev visibility - can be removed in production)
           ======================================================================== */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         <Card className="bg-gradient-subtle border-0">
           <CardBody className="text-sm">
             <span className="font-medium text-neutral-700">
@@ -522,7 +514,7 @@ export function HomePage({ isLoading = false, isError = false, error = null, dat
             )}
           </CardBody>
         </Card>
-      </div>
+      </section>
     </div>
   );
 }
