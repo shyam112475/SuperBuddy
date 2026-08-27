@@ -1,10 +1,9 @@
 import { Link } from 'react-router-dom';
-import { Card, CardImage, CardBody } from '../../components/Card';
+import { Card,  CardBody } from '../../components/Card';
 import { Badge } from '../../components/Badge';
 import { Avatar } from '../../components/Avatar';
 import { Button } from '../../components/Button';
 import { StarRating } from '../../components/StarRating';
-import { cn } from '../../utils/cn';
 import type { Booking } from './types';
 
 /**
@@ -20,12 +19,15 @@ export function BookingCard({ booking }: { booking: Booking }) {
     CONFIRMED: 'emerald',
     COMPLETED: 'neutral',
     CANCELLED: 'red',
+    REJECTED: 'red',
+    ACCEPTED: 'green',
   }[booking.status] || 'neutral';
 
   const statusLabel = {
     PENDING: '⏳ Pending Response',
-    CONFIRMED: '✓ Confirmed',
+    ACCEPTED: '✓ Confirmed',
     COMPLETED: '✓ Completed',
+    REJECTED: '✕ Cancelled',
     CANCELLED: '✕ Cancelled',
   }[booking.status];
 
@@ -54,7 +56,7 @@ export function BookingCard({ booking }: { booking: Booking }) {
               name={booking.partner.fullName}
               src={booking.partner.profileImage || undefined}
               size="md"
-              verified={booking.partner.isVerified}
+              verified={booking.status === 'COMPLETED'}
             />
 
             <div className="min-w-0 flex-1">
@@ -63,7 +65,7 @@ export function BookingCard({ booking }: { booking: Booking }) {
               </h3>
 
               <p className="text-sm text-neutral-600 truncate">
-                {booking.service.category.name}
+                {booking.pricePerHourQuoted}
               </p>
             </div>
           </div>
@@ -73,10 +75,10 @@ export function BookingCard({ booking }: { booking: Booking }) {
             {/* Service & Price */}
             <div className="flex items-center justify-between">
               <span className="text-sm text-neutral-600">
-                {booking.service.name}
+                {booking.serviceCategoryName}
               </span>
               <span className="font-bold text-brand-600">
-                ₹{booking.service.pricePerHour}/hr
+                ₹{booking.pricePerHourQuoted}/hr
               </span>
             </div>
 
@@ -113,12 +115,12 @@ export function BookingCard({ booking }: { booking: Booking }) {
           </div>
 
           {/* Rating (if completed) */}
-          {isPast && booking.rating && (
+          {isPast && booking.hasReview && (
             <div className="border-t border-neutral-200 pt-4">
               <div className="flex items-center gap-2">
-                <StarRating value={booking.rating} size="sm" />
+                <StarRating value={booking.hasReview} size="sm" />
                 <span className="text-sm font-medium text-neutral-900">
-                  {booking.rating} stars
+                  {booking.hasReview} stars
                 </span>
               </div>
             </div>
@@ -133,7 +135,7 @@ export function BookingCard({ booking }: { booking: Booking }) {
             </p>
           )}
 
-          {booking.status === 'CONFIRMED' && isUpcoming && (
+          {booking.status === 'ACCEPTED' && isUpcoming && (
             <div className="space-y-2">
               <p className="text-xs text-emerald-600 font-medium text-center">
                 ✓ Confirmed & Upcoming
@@ -144,13 +146,13 @@ export function BookingCard({ booking }: { booking: Booking }) {
             </div>
           )}
 
-          {isPast && booking.status === 'COMPLETED' && !booking.rating && (
+          {isPast && booking.status === 'COMPLETED' && !booking.hasReview && (
             <Button variant="primary" fullWidth size="sm">
               Leave Review
             </Button>
           )}
 
-          {isPast && booking.rating && (
+          {isPast && booking.hasReview && (
             <p className="text-xs text-neutral-500 text-center">
               ✓ You reviewed this booking
             </p>

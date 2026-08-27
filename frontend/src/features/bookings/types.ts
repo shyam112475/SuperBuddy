@@ -14,7 +14,7 @@ export interface Booking {
   rejectionReason: string | null;
   createdAt: string;
   updatedAt: string;
-  hasReview: boolean;
+  hasReview: number;
   viewerRole: BookingActorRole;
   customer: { id: string; fullName: string; profileImage: string | null };
   partner: {
