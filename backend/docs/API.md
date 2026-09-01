@@ -45,11 +45,17 @@ submission are limited to 30/min.
 |---|---|---|---|
 | POST | `/auth/register` | none | Create account (role always defaults to `USER`) |
 | POST | `/auth/login` | none | Returns access token + sets refresh cookie |
-| POST | `/auth/refresh` | refresh cookie | Rotates the refresh token, returns a new access token |
-| POST | `/auth/logout` | refresh cookie | Revokes the current refresh token |
+| POST | `/auth/refresh` | refresh cookie, or `{ refreshToken }` in body | Rotates the refresh token, returns a new access token |
+| POST | `/auth/logout` | refresh cookie, or `{ refreshToken }` in body | Revokes the current refresh token |
 | POST | `/auth/forgot-password` | none | Always returns success (no user enumeration) |
 | POST | `/auth/reset-password` | reset token | Also revokes all existing sessions |
 | GET | `/auth/me` | required | Current session's user |
+
+`register` and `login` also return `refreshToken` in the response body
+(alongside setting the httpOnly cookie). The web client ignores this field
+and uses the cookie; the mobile client stores it explicitly and sends it
+back in the body on `/refresh`/`/logout`, since httpOnly cookies aren't
+reliably persisted by React Native's networking stack across app restarts.
 
 ## Users (`/users`)
 

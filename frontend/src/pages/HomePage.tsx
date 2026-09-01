@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom';
 import { useHealthCheck } from '../hooks/useHealthCheck';
 import { Button } from '../components/Button';
-import { Card,  CardBody } from '../components/Card';
+import { Card, CardImage, CardBody } from '../components/Card';
 import { Badge } from '../components/Badge';
-
+import { cn } from '../utils/cn';
 
 /**
  * Activity data with enhanced descriptions for premium feel

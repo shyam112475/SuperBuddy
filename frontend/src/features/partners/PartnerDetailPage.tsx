@@ -6,11 +6,21 @@ import { useAuthStore } from '../../store/authStore';
 import { CreateBookingForm } from '../bookings/CreateBookingForm';
 import { StarRating } from '../../components/StarRating';
 import { ReviewList } from '../reviews/ReviewList';
-import { Card, CardBody, } from '../../components/Card';
+import { Card, CardBody, CardImage } from '../../components/Card';
 import { Badge } from '../../components/Badge';
+import { Avatar } from '../../components/Avatar';
 import { Button } from '../../components/Button';
+import { cn } from '../../utils/cn';
 
-
+const DAY_LABELS: Record<string, string> = {
+  SUNDAY: 'Sun',
+  MONDAY: 'Mon',
+  TUESDAY: 'Tue',
+  WEDNESDAY: 'Wed',
+  THURSDAY: 'Thu',
+  FRIDAY: 'Fri',
+  SATURDAY: 'Sat',
+};
 
 /**
  * ============================================================================
@@ -29,7 +39,7 @@ import { Button } from '../../components/Button';
 export function PartnerDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [_showMobileBooking, _setShowMobileBooking] = useState(false);
+  const [showMobileBooking, setShowMobileBooking] = useState(false);
 
   const { data: partner, isLoading, isError } = usePartnerDetail(id);
   const currentUser = useAuthStore((s) => s.user);
@@ -37,7 +47,7 @@ export function PartnerDetailPage() {
   const [requestingOfferingId, setRequestingOfferingId] =
     useState<string | null>(null);
 
-  const isOwnProfile = currentUser?.id === partner?.id;
+  const isOwnProfile = currentUser?.id === partner?.partner.userId;
 
   useEffect(() => {
     if (
@@ -135,7 +145,7 @@ export function PartnerDetailPage() {
 
           {/* Top badges - Verification & Status */}
           <div className="absolute top-4 left-4 sm:top-6 sm:left-6 flex items-center gap-2">
-            {partner.isAcceptingBookings && (
+            {partner.isVerified && (
               <Badge variant="success" size="sm" icon="✓">
                 Verified
               </Badge>
@@ -244,9 +254,9 @@ export function PartnerDetailPage() {
                       About {partner.partner.fullName.split(' ')[0]}
                     </h2>
 
-                    {partner.bio && (
+                    {partner.partner.bio && (
                       <p className="text-lg text-neutral-700 leading-relaxed whitespace-pre-wrap">
-                        {partner.bio}
+                        {partner.partner.bio}
                       </p>
                     )}
                   </div>
@@ -258,7 +268,7 @@ export function PartnerDetailPage() {
                         Member Since
                       </p>
                       <p className="text-base font-semibold text-neutral-900 mt-1">
-                        {new Date(partner.createdAt).toLocaleDateString('en-US', {
+                        {new Date(partner.partner.createdAt).toLocaleDateString('en-US', {
                           year: 'numeric',
                           month: 'long',
                         })}
@@ -273,6 +283,17 @@ export function PartnerDetailPage() {
                         Usually &lt;1hr
                       </p>
                     </div>
+
+                    {partner.languageSpoken && (
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
+                          Languages
+                        </p>
+                        <p className="text-base font-semibold text-neutral-900 mt-1">
+                          {partner.languageSpoken}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </CardBody>
               </Card>
@@ -293,7 +314,7 @@ export function PartnerDetailPage() {
                       <CardBody className="flex-1 space-y-4">
                         <div>
                           <h3 className="text-lg font-bold text-neutral-900">
-                            {service.category.name}
+                            {service.name}
                           </h3>
 
                           <p className="text-sm text-neutral-600 mt-1">
@@ -315,11 +336,11 @@ export function PartnerDetailPage() {
                             </span>
                           </div>
 
-                          {service.pricePerHour && (
+                          {service.minimumHours && (
                             <div className="flex items-center justify-between">
                               <span className="text-sm text-neutral-600">Min. hours</span>
                               <span className="font-medium text-neutral-900">
-                                {service.pricePerHour}h
+                                {service.minimumHours}h
                               </span>
                             </div>
                           )}

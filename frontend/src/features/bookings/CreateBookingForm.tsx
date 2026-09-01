@@ -6,6 +6,7 @@ import { useCreateBooking } from './hooks';
 import { Card, CardBody } from '../../components/Card';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
+import { Input } from '../../components/Input';
 import { cn } from '../../utils/cn';
 import type { AxiosError } from 'axios';
 
@@ -52,8 +53,8 @@ export function CreateBookingForm({
   function onSubmit(values: CreateBookingFormValues) {
     mutate(
       {
-        partnerProfileId: partnerId,
-        offeringId: serviceId,
+        partnerId,
+        serviceId,
         activityDescription: values.activityDescription,
         scheduledStart: new Date(`${values.date}T${values.startTime}`).toISOString(),
         scheduledEnd: new Date(`${values.date}T${values.endTime}`).toISOString(),

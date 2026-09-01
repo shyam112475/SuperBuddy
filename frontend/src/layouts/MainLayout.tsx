@@ -148,7 +148,7 @@ function AuthNav({
             name={user.fullName}
             src={user.profileImage || undefined}
             size="md"
-            verified={user.verificationStatus === 'VERIFIED'}
+            verified={user.isVerified}
           />
 
           <div className="min-w-0 flex-1">
@@ -258,7 +258,7 @@ function AuthNav({
             name={user.fullName}
             src={user.profileImage || undefined}
             size="sm"
-            verified={user.verificationStatus === 'VERIFIED'}
+            verified={user.isVerified}
           />
           <svg
             className="h-4 w-4 text-neutral-600 group-hover:text-neutral-900"

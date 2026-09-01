@@ -1,11 +1,7 @@
 import React from 'react';
 import { cn } from '../utils/cn';
 
-interface InputProps
-  extends Omit<
-    React.InputHTMLAttributes<HTMLInputElement>,
-    'size' | 'icon'
-  > {
+interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
   helperText?: string;
@@ -77,7 +73,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             className={cn(
               baseStyles,
               sizeStyles[size],
-            icon ? 'pl-10' : '',
+              icon && 'pl-10',
               className,
             )}
             {...props}

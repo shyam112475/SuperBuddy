@@ -7,7 +7,8 @@ companionship, and similar).
 ## Stack
 
 - **Backend:** Node.js, Express, TypeScript, PostgreSQL, Prisma, Socket.IO, Zod
-- **Frontend:** React, TypeScript, Vite, TanStack Query, Zustand, Tailwind CSS
+- **Frontend (web):** React, TypeScript, Vite, TanStack Query, Zustand, Tailwind CSS
+- **Frontend (mobile):** React Native, Expo, Expo Router, TypeScript — see [`mobile/README.md`](mobile/README.md) and [`mobile/DESIGN.md`](mobile/DESIGN.md)
 
 ## Getting Started
 

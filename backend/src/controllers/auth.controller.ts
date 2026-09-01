@@ -10,28 +10,35 @@ export const authController = {
   register: asyncHandler(async (req: Request, res: Response) => {
     const { user, accessToken, refreshToken } = await authService.register(req.body, req.ip);
     setRefreshTokenCookie(res, refreshToken);
-    sendSuccess(res, { user, accessToken }, 'Account created successfully', 201);
+    // refreshToken is included in the body alongside the cookie so mobile
+    // clients (which can't reliably rely on httpOnly cookie persistence —
+    // see mobile/src/services/tokenStore.ts) can store it explicitly. The
+    // web client already works via the cookie and simply ignores this field.
+    sendSuccess(res, { user, accessToken, refreshToken }, 'Account created successfully', 201);
   }),
 
   login: asyncHandler(async (req: Request, res: Response) => {
     const { user, accessToken, refreshToken } = await authService.login(req.body, req.ip);
     setRefreshTokenCookie(res, refreshToken);
-    sendSuccess(res, { user, accessToken }, 'Logged in successfully');
+    sendSuccess(res, { user, accessToken, refreshToken }, 'Logged in successfully');
   }),
 
   refresh: asyncHandler(async (req: Request, res: Response) => {
-    const incomingToken = req.cookies?.[REFRESH_TOKEN_COOKIE_NAME];
+    // Cookie first (web), falling back to an explicit body token (mobile —
+    // see the note in register/login above for why mobile can't depend on
+    // the cookie alone).
+    const incomingToken = req.cookies?.[REFRESH_TOKEN_COOKIE_NAME] ?? req.body?.refreshToken;
     if (!incomingToken) {
       throw new UnauthorizedError('No refresh token provided');
     }
 
     const { user, accessToken, refreshToken } = await authService.refresh(incomingToken, req.ip);
     setRefreshTokenCookie(res, refreshToken);
-    sendSuccess(res, { user, accessToken }, 'Token refreshed successfully');
+    sendSuccess(res, { user, accessToken, refreshToken }, 'Token refreshed successfully');
   }),
 
   logout: asyncHandler(async (req: Request, res: Response) => {
-    const incomingToken = req.cookies?.[REFRESH_TOKEN_COOKIE_NAME];
+    const incomingToken = req.cookies?.[REFRESH_TOKEN_COOKIE_NAME] ?? req.body?.refreshToken;
     if (incomingToken) {
       await authService.logout(incomingToken);
     }
