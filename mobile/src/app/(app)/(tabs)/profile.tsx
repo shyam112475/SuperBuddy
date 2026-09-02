@@ -1,14 +1,43 @@
-import { StyleSheet, View } from 'react-native';
+import { Link } from 'expo-router';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { AppText, AppView, Avatar, Badge, Button, Card } from '@/components/ui';
+import { Feather } from '@expo/vector-icons';
+import { AppText, AppView, Avatar, Badge, Card } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 import { useAuthStore } from '@/store/authStore';
 import { useLogout } from '@/features/auth/hooks';
 
+function MenuRow({
+  icon,
+  label,
+  onPress,
+  destructive = false,
+}: {
+  icon: keyof typeof Feather.glyphMap;
+  label: string;
+  onPress: () => void;
+  destructive?: boolean;
+}) {
+  const theme = useTheme();
+  return (
+    <Pressable onPress={onPress} style={styles.menuRow}>
+      <View style={styles.menuRowLeft}>
+        <Feather name={icon} size={18} color={destructive ? theme.danger : theme.textSecondary} />
+        <AppText variant="bodyMedium" color={destructive ? 'danger' : 'text'}>
+          {label}
+        </AppText>
+      </View>
+      <Feather name="chevron-right" size={18} color={theme.textTertiary} />
+    </Pressable>
+  );
+}
+
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
+  const theme = useTheme();
   const user = useAuthStore((s) => s.user);
-  const { mutate: logout, isPending: isLoggingOut } = useLogout();
+  const { mutate: logout } = useLogout();
 
   if (!user) return null;
 
@@ -36,13 +65,17 @@ export default function ProfileScreen() {
           </View>
         </Card>
 
-        <Button
-          label="Sign out"
-          variant="secondary"
-          loading={isLoggingOut}
-          onPress={() => logout()}
-          style={styles.signOutButton}
-        />
+        <Card padded={false} style={styles.menuCard}>
+          <Link href="/(app)/profile/edit" asChild>
+            <MenuRow icon="user" label="Edit profile" onPress={() => {}} />
+          </Link>
+          <View style={[styles.divider, { backgroundColor: theme.border }]} />
+          <Link href="/(app)/profile/settings" asChild>
+            <MenuRow icon="settings" label="Account settings" onPress={() => {}} />
+          </Link>
+          <View style={[styles.divider, { backgroundColor: theme.border }]} />
+          <MenuRow icon="log-out" label="Sign out" destructive onPress={() => logout()} />
+        </Card>
       </View>
     </AppView>
   );
@@ -70,7 +103,23 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
     marginTop: Spacing.lg,
   },
-  signOutButton: {
-    marginTop: Spacing.sm,
+  menuCard: {
+    overflow: 'hidden',
+  },
+  menuRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.lg,
+  },
+  menuRowLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+  },
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    marginLeft: Spacing.lg,
   },
 });

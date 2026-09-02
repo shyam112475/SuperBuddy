@@ -5,4 +5,6 @@ export * from './Badge';
 export * from './Button';
 export * from './Card';
 export * from './CompanionMark';
+export * from './DateField';
+export * from './PillSelector';
 export * from './TextField';

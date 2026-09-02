@@ -1,188 +1,73 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { Avatar } from '../../components/Avatar';
-import { Badge } from '../../components/Badge';
-import { Button } from '../../components/Button';
-import { Card, CardImage, CardBody } from '../../components/Card';
+import { Link } from 'react-router-dom';
 import { StarRating } from '../../components/StarRating';
-import { cn } from '../../utils/cn';
 import type { PublicPartner } from './types';
 
-/**
- * ============================================================================
- * PREMIUM PARTNER CARD - Image-First Marketplace Design
- * ============================================================================
- * 
- * Features:
- * - Large, prominent profile image (image-first design)
- * - Quick info overlay on hover
- * - Verification badge
- * - Rating display
- * - Service tags
- * - Premium hover interactions
- * - Mobile-optimized
- */
 export function PartnerCard({ partner }: { partner: PublicPartner }) {
-  const navigate = useNavigate();
-
-  const isVerified = true; // Assuming from the original design
-  const hasReviews = partner.reviewCount > 0;
+  const initials = partner.partner.fullName
+    .split(' ')
+    .map((p) => p[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
 
   return (
     <Link
       to={`/partners/${partner.id}`}
-      className="group"
+      className="block rounded-lg border border-neutral-200 bg-white p-4 transition hover:border-brand-300 hover:shadow-sm"
     >
-      <Card
-        interactive
-        className="overflow-hidden h-full flex flex-col"
-      >
-        {/* ===== LARGE PROFILE IMAGE (Image-First) ===== */}
-        <div className="relative overflow-hidden h-60 sm:h-72 bg-neutral-100">
+      <div className="flex items-start gap-3">
+        <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full bg-brand-100 text-brand-700">
           {partner.partner.profileImage ? (
             <img
               src={partner.partner.profileImage}
-              alt={partner.partner.fullName}
-              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
+              alt=""
+              className="h-full w-full object-cover"
             />
           ) : (
-            <div className="h-full w-full bg-gradient-brand flex items-center justify-center text-6xl text-white opacity-20">
-              👤
+            <div className="flex h-full w-full items-center justify-center text-sm font-semibold">
+              {initials}
             </div>
           )}
-
-          {/* Overlay gradient on hover */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-          {/* Verification Badge - Top Right */}
-          {isVerified && (
-            <div className="absolute top-4 right-4">
-              <Badge variant="success" size="sm" icon="✓">
-                Verified
-              </Badge>
-            </div>
-          )}
-
-          {/* Online Status Indicator - Top Left */}
-          <div className="absolute top-4 left-4 flex items-center gap-2">
-            <div className="h-3 w-3 rounded-full bg-emerald-500 ring-2 ring-white" />
-            <span className="text-xs font-semibold text-white drop-shadow">
-              Available
-            </span>
-          </div>
         </div>
 
-        {/* ===== CARD BODY - Premium Content ===== */}
-        <CardBody className="flex-1 flex flex-col space-y-4">
-          {/* Name & Location */}
-          <div className="space-y-2">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex-1 min-w-0">
-                <h3 className="text-lg font-bold text-neutral-900 truncate group-hover:text-brand-600 transition-colors">
-                  {partner.partner.fullName}
-                </h3>
-
-                <p className="text-sm text-neutral-600 line-clamp-1">
-                  {partner.headline}
-                </p>
-              </div>
-            </div>
-
-            {/* Location */}
-            <div className="flex items-center gap-1.5 text-sm text-neutral-500">
-              <span>📍</span>
-              <span className="truncate">
-                {partner.city}
-                {partner.area ? `, ${partner.area}` : ''}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <h3 className="truncate font-medium text-neutral-900">{partner.partner.fullName}</h3>
+            <span className="shrink-0 rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-medium text-green-700">
+              Verified
+            </span>
+          </div>
+          <p className="truncate text-sm text-neutral-600">{partner.headline}</p>
+          <p className="mt-0.5 text-xs text-neutral-400">
+            {partner.city}
+            {partner.area ? `, ${partner.area}` : ''}
+          </p>
+          {partner.reviewCount > 0 && (
+            <div className="mt-1 flex items-center gap-1.5">
+              <StarRating value={Math.round(partner.averageRating ?? 0)} size="sm" />
+              <span className="text-xs text-neutral-500">
+                {partner.averageRating?.toFixed(1)} ({partner.reviewCount})
               </span>
             </div>
-          </div>
-
-          {/* Rating Section */}
-          {hasReviews ? (
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1">
-                <span className="text-lg">⭐</span>
-                <span className="font-bold text-neutral-900">
-                  {partner.averageRating?.toFixed(1)}
-                </span>
-              </div>
-
-              <div className="flex-1 min-w-0">
-                <StarRating
-                  value={Math.round(partner.averageRating ?? 0)}
-                  size="sm"
-                />
-              </div>
-
-              <span className="text-xs font-medium text-neutral-500 whitespace-nowrap">
-                {partner.reviewCount}
-                {partner.reviewCount === 1 ? ' review' : ' reviews'}
-              </span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 text-sm text-neutral-500">
-              <span>✨</span>
-              <span>New companion · No reviews yet</span>
-            </div>
           )}
+        </div>
+      </div>
 
-          {/* Services Tags */}
-          {partner.services.length > 0 && (
-            <div className="space-y-2">
-              <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
-                Services
-              </p>
-
-              <div className="flex flex-wrap gap-2">
-                {partner.services.slice(0, 2).map((service) => (
-                  <Badge
-                    key={service.id}
-                    size="sm"
-                    className="text-xs"
-                  >
-                    {service.category.name}
-                  </Badge>
-                ))}
-
-                {partner.services.length > 2 && (
-                  <Badge size="sm" variant="neutral">
-                    +{partner.services.length - 2}
-                  </Badge>
-                )}
-              </div>
-            </div>
+      {partner.services.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {partner.services.slice(0, 3).map((s) => (
+            <span
+              key={s.id}
+              className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs text-neutral-600"
+            >
+              {s.category.name}
+            </span>
+          ))}
+          {partner.services.length > 3 && (
+            <span className="text-xs text-neutral-400">+{partner.services.length - 3} more</span>
           )}
-
-          {/* Spacer to push buttons to bottom */}
-          <div className="flex-1" />
-
-          {/* CTA Buttons */}
-          <div className="space-y-2 border-t border-neutral-200 pt-4">
-            <Button
-              variant="primary"
-              fullWidth
-              size="sm"
-              onClick={(e) => {
-                e.preventDefault();
-                navigate(`/partners/${partner.id}?book=true`);
-              }}
-            >
-              Book Now
-            </Button>
-
-            <Button
-              variant="outline"
-              fullWidth
-              size="sm"
-              onClick={(e) => {
-                e.preventDefault();
-              }}
-            >
-              View Profile
-            </Button>
-          </div>
-        </CardBody>
-      </Card>
+        </div>
+      )}
     </Link>
   );
 }

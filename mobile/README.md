@@ -39,7 +39,7 @@ Scan the QR code with Expo Go, or press `i` / `a` to launch a simulator/emulator
 ```
 M-PHASE 1  ✅ Foundation & Project Setup
 M-PHASE 2  ✅ Authentication
-M-PHASE 3  ⬜ User Profile
+M-PHASE 3  ✅ User Profile
 M-PHASE 4  ⬜ Partner Discovery & Profiles
 M-PHASE 5  ⬜ Booking System
 M-PHASE 6  ⬜ Payments
