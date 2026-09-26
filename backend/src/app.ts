@@ -22,7 +22,9 @@ export function createApp(): Application {
     origin: (origin, callback) => {
       const allowedOrigins = [
         env.FRONTEND_URL,
+        'http://localhost:5173',
         'https://localhost',
+        'capacitor://localhost',
       ];
 
       // Allow requests without an Origin header
