@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ch-bg: #f7f7fb;
+  --ch-surface: #ffffff;
+  --ch-text: #17171c;
+  --ch-muted: #73737f;
+  --ch-border: #e9e9f0;
+  --ch-primary: #6d5dfc;
+  --ch-primary-dark: #5546e8;
+  --ch-accent: #ff4f8b;
+  --ch-success: #16b981;
+  --ch-shadow: 0 10px 35px rgba(28, 25, 56, .07);
+}
+
+html, body, #root { min-height: 100%; }
+html { background: var(--ch-bg); }
+body {
+  margin: 0;
+  background: var(--ch-bg);
+  color: var(--ch-text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+a { transition: color .18s ease, opacity .18s ease, background-color .18s ease; }
+button { transition: transform .16s ease, box-shadow .18s ease, background-color .18s ease; }
+button:active { transform: scale(.98); }
+
+/* Global mobile-app surface */
+.ch-app-main { width: 100%; }
+.ch-page { width: min(100% - 32px, 1080px); margin-inline: auto; }
+.ch-bottom-space { padding-bottom: 86px; }
+
+/* Make existing Tailwind-heavy screens visually consistent without changing their behavior. */
+main > div { color: var(--ch-text); }
+main .bg-white { background-color: var(--ch-surface); }
+main .border-neutral-200, main .border-neutral-300 { border-color: var(--ch-border); }
+main .text-neutral-900 { color: var(--ch-text); }
+main .text-neutral-700, main .text-neutral-600 { color: #454550; }
+main .text-neutral-500, main .text-neutral-400 { color: var(--ch-muted); }
+main .rounded-lg { border-radius: 16px; }
+main .rounded-xl { border-radius: 18px; }
+main .rounded-2xl { border-radius: 22px; }
+main .shadow-card, main .shadow-sm { box-shadow: var(--ch-shadow); }
+main input, main select, main textarea {
+  border-radius: 14px;
+  border-color: var(--ch-border);
+  min-height: 44px;
+  background: #fff;
+}
+main input:focus, main select:focus, main textarea:focus {
+  border-color: rgba(109,93,252,.65) !important;
+  box-shadow: 0 0 0 4px rgba(109,93,252,.10) !important;
+}
+
+/* Auth / forms: app-like cards */
+main form > div,
+main .max-w-md > div,
+main .max-w-lg > div { }
+
+/* Common page headings */
+main h1 { letter-spacing: -.035em; }
+main h2, main h3 { letter-spacing: -.02em; }
+
+/* Better touch targets for icon-ish controls */
+main button:not([disabled]), main a { touch-action: manipulation; }
+
+/* Small screens */
+@media (max-width: 767px) {
+  body { overflow-x: hidden; }
+  .ch-page { width: min(100% - 24px, 680px); }
+  main { padding-bottom: 76px; }
+  main > div { max-width: 100% !important; }
+  main .px-6 { padding-inline: 14px; }
+  main .px-8 { padding-inline: 16px; }
+  main .py-16 { padding-block: 32px; }
+  main .py-12 { padding-block: 28px; }
+  main .gap-6 { gap: 14px; }
+  main .gap-8 { gap: 18px; }
+  main .p-6 { padding: 16px; }
+  main .p-8 { padding: 18px; }
+  main .text-3xl { font-size: 1.85rem; line-height: 1.12; }
+  main .text-2xl { font-size: 1.55rem; }
+}
+
+@media (min-width: 768px) {
+  .ch-bottom-space { padding-bottom: 24px; }
+}

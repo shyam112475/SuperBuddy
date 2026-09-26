@@ -1,0 +1,10 @@
+import React from 'react';
+import { cn } from '../utils/cn';
+interface CardProps extends React.HTMLAttributes<HTMLDivElement>{variant?:'elevated'|'outlined'|'subtle';interactive?:boolean;children:React.ReactNode}
+export const Card=React.forwardRef<HTMLDivElement,CardProps>(({variant='elevated',interactive=false,className,children,...props},ref)=><div ref={ref} className={cn('rounded-[22px] bg-white transition-all duration-200',variant==='elevated'&&'shadow-[0_8px_28px_rgba(20,20,40,.06)]',variant==='outlined'&&'border border-neutral-200',variant==='subtle'&&'bg-neutral-50',interactive&&'cursor-pointer hover:-translate-y-0.5 hover:shadow-[0_14px_36px_rgba(20,20,40,.1)]',className)} {...props}>{children}</div>);
+Card.displayName='Card';
+interface CardImageProps extends React.ImgHTMLAttributes<HTMLImageElement>{aspectRatio?:'square'|'4/3'|'16/9'|'1/1'}
+export const CardImage=React.forwardRef<HTMLImageElement,CardImageProps>(({aspectRatio='4/3',className,...props},ref)=><div className={cn('overflow-hidden rounded-t-[22px] bg-neutral-100',aspectRatio==='square'||aspectRatio==='1/1'?'aspect-square':'aspect-video')}><img ref={ref} className={cn('h-full w-full object-cover',className)} {...props}/></div>); CardImage.displayName='CardImage';
+export const CardBody=React.forwardRef<HTMLDivElement,React.HTMLAttributes<HTMLDivElement>>(({className,children,...props},ref)=><div ref={ref} className={cn('p-5 sm:p-6',className)} {...props}>{children}</div>); CardBody.displayName='CardBody';
+export const CardHeader=React.forwardRef<HTMLDivElement,React.HTMLAttributes<HTMLDivElement>>(({className,children,...props},ref)=><div ref={ref} className={cn('border-b border-neutral-100 px-5 py-4 sm:px-6',className)} {...props}>{children}</div>); CardHeader.displayName='CardHeader';
+export const CardFooter=React.forwardRef<HTMLDivElement,React.HTMLAttributes<HTMLDivElement>>(({className,children,...props},ref)=><div ref={ref} className={cn('border-t border-neutral-100 px-5 py-4 sm:px-6',className)} {...props}>{children}</div>); CardFooter.displayName='CardFooter';
